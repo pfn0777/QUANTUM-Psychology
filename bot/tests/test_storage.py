@@ -1,5 +1,6 @@
 """Storage contract tests using a temporary SQLite database."""
 
+import asyncio
 import csv
 import io
 from datetime import datetime, timedelta, timezone
@@ -224,5 +225,72 @@ async def test_failed_commit_rolls_back_save_and_delivery(tmp_path, monkeypatch)
 
         await storage.mark_delivered(lead_id)
         assert (await storage.all_rows())[0]["delivered"] == 1
+    finally:
+        await storage.close()
+
+
+@pytest.mark.asyncio
+async def test_cancelled_save_rolls_back_before_next_commit(tmp_path, monkeypatch) -> None:
+    storage = Storage(tmp_path / "leads.db")
+    await storage.init()
+    try:
+        assert storage._db is not None
+        commit_started = asyncio.Event()
+        never_released = asyncio.Event()
+
+        async def pause_commit() -> None:
+            commit_started.set()
+            await never_released.wait()
+
+        with monkeypatch.context() as patcher:
+            patcher.setattr(storage._db, "commit", pause_commit)
+            save_task = asyncio.create_task(storage.save(make_lead(name="Cancelled")))
+            await commit_started.wait()
+            save_task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await save_task
+
+        assert await storage.all_rows() == []
+        await storage.save(make_lead(name="Retained"))
+        assert [row["name"] for row in await storage.all_rows()] == ["Retained"]
+    finally:
+        await storage.close()
+
+
+@pytest.mark.asyncio
+async def test_close_waits_for_active_write(tmp_path, monkeypatch) -> None:
+    path = tmp_path / "leads.db"
+    storage = Storage(path)
+    await storage.init()
+    try:
+        assert storage._db is not None
+        original_commit = storage._db.commit
+        commit_started = asyncio.Event()
+        release_commit = asyncio.Event()
+
+        async def pause_commit() -> None:
+            commit_started.set()
+            await release_commit.wait()
+            await original_commit()
+
+        with monkeypatch.context() as patcher:
+            patcher.setattr(storage._db, "commit", pause_commit)
+            save_task = asyncio.create_task(storage.save(make_lead()))
+            await commit_started.wait()
+            close_task = asyncio.create_task(storage.close())
+            try:
+                await asyncio.sleep(0)
+                assert not close_task.done()
+            finally:
+                release_commit.set()
+            await save_task
+            await close_task
+
+        reopened = Storage(path)
+        await reopened.init()
+        try:
+            assert len(await reopened.all_rows()) == 1
+        finally:
+            await reopened.close()
     finally:
         await storage.close()

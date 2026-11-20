@@ -140,7 +140,7 @@ class Storage:
                     raise RuntimeError("SQLite did not return a lead id")
                 await db.commit()
                 return lead_id
-            except Exception:
+            except BaseException:
                 await db.rollback()
                 raise
 
@@ -153,7 +153,7 @@ class Storage:
                 ):
                     pass
                 await db.commit()
-            except Exception:
+            except BaseException:
                 await db.rollback()
                 raise
 
@@ -207,7 +207,8 @@ class Storage:
         return output.getvalue().encode("utf-8-sig")
 
     async def close(self) -> None:
-        if self._db is not None:
-            db = self._db
-            self._db = None
-            await db.close()
+        async with self._write_lock:
+            if self._db is not None:
+                db = self._db
+                await db.close()
+                self._db = None
