@@ -1,0 +1,26 @@
+.env
+.env.*
+!.env.example
+*.db
+*.db-journal
+*.sqlite
+bot/data/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+.vercel/
+dist/
+build/
+*.jks
+*.keystore
+*.zip
+*.exe
+.venv/
+venv/
+/brand/
+/Screenshot_*.png
+/Kurs modullari.txt
+/telegram post.txt
+/instagram-audience-report.md
+/telegram-audience-report.md
