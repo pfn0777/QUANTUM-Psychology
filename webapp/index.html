@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="uz-Cyrl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#140B2E">
+  <meta name="color-scheme" content="dark">
+  <title></title>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="wordmark">
+        <img class="wordmark__mark" src="assets/logo-mark.svg" alt="">
+        <span class="wordmark__text"><span class="wordmark__primary" data-i18n="wordmarkPrimary"></span><em class="wordmark__secondary" data-i18n="wordmarkSecondary"></em></span>
+      </div>
+      <nav class="script-toggle" data-i18n-aria-label="scriptLabel">
+        <button id="toggleCyr" type="button" data-script="cyr" data-i18n="toggleCyr"></button>
+        <button id="toggleLat" type="button" data-script="lat" data-i18n="toggleLat"></button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="heroTitle">
+        <div class="hero__orbit" aria-hidden="true"></div>
+        <img class="hero__mark" src="assets/logo-mark.svg" alt="">
+        <p class="eyebrow" data-i18n="heroEyebrow"></p>
+        <h1 id="heroTitle" data-i18n="heroTitle"></h1>
+        <p class="hero__subtitle" data-i18n="heroSubtitle"></p>
+        <p class="hero__tagline" data-i18n="heroTagline"></p>
+        <div class="hero__offer"><strong data-i18n="heroTag"></strong><span data-i18n="heroTagText"></span></div>
+        <a class="button button--gold" href="#leadForm" data-i18n="heroCta"></a>
+      </section>
+
+      <section class="section section--about" aria-labelledby="aboutTitle">
+        <p class="section__index" aria-hidden="true">01</p>
+        <h2 id="aboutTitle" data-i18n="aboutTitle"></h2>
+        <p id="introText" class="lead-copy"></p>
+        <p id="twelveLine" class="twelve-line"></p>
+      </section>
+
+      <section class="section" aria-labelledby="modulesTitle">
+        <p class="section__index" aria-hidden="true">02</p>
+        <h2 id="modulesTitle" data-i18n="modulesTitle"></h2>
+        <p class="section__hint" data-i18n="chipsHint"></p>
+        <div id="modulesList" class="module-grid"></div>
+      </section>
+
+      <section class="section section--feature" aria-labelledby="goalTitle">
+        <p class="section__index" aria-hidden="true">03</p>
+        <h2 id="goalTitle"></h2>
+        <p id="goalText" class="lead-copy"></p>
+      </section>
+
+      <section class="section" aria-labelledby="audienceTitle">
+        <p class="section__index" aria-hidden="true">04</p>
+        <h2 id="audienceTitle"></h2>
+        <ul id="audienceList" class="audience-list"></ul>
+      </section>
+
+      <section class="section section--story" aria-labelledby="founderTitle">
+        <p class="section__index" aria-hidden="true">05</p>
+        <h2 id="founderTitle" data-i18n="founderTitle"></h2>
+        <p data-i18n="founderP1"></p>
+        <p data-i18n="founderP2"></p>
+        <p data-i18n="founderP3"></p>
+      </section>
+
+      <section class="section" aria-labelledby="consultationTitle">
+        <p class="section__index" aria-hidden="true">06</p>
+        <h2 id="consultationTitle" data-i18n="consultationTitle"></h2>
+        <ol class="steps">
+          <li><span class="steps__number">01</span><p data-i18n="consultationStep1"></p></li>
+          <li><span class="steps__number">02</span><p data-i18n="consultationStep2"></p></li>
+          <li><span class="steps__number">03</span><p data-i18n="consultationStep3"></p></li>
+        </ol>
+      </section>
+
+      <section class="section section--form" aria-labelledby="formTitle">
+        <p class="section__index" aria-hidden="true">07</p>
+        <h2 id="formTitle" data-i18n="formTitle"></h2>
+        <p class="section__intro" data-i18n="formIntro"></p>
+        <p class="required-hint" data-i18n="requiredHint"></p>
+        <form id="leadForm" novalidate>
+          <div class="field" data-field="name">
+            <label for="name" data-i18n="nameLabel"></label>
+            <input id="name" name="name" type="text" autocomplete="name" aria-describedby="nameHint nameError" data-i18n-placeholder="namePlaceholder">
+            <small id="nameHint" data-i18n="nameHint"></small><p id="nameError" class="field__error" data-error-for="name" hidden></p>
+          </div>
+          <div class="field" data-field="age">
+            <label for="age" data-i18n="ageLabel"></label>
+            <input id="age" name="age" type="number" inputmode="numeric" aria-describedby="ageHint ageError" data-i18n-placeholder="agePlaceholder">
+            <small id="ageHint" data-i18n="ageHint"></small><p id="ageError" class="field__error" data-error-for="age" hidden></p>
+          </div>
+          <div class="field" data-field="phone">
+            <label for="phone" data-i18n="phoneLabel"></label>
+            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" aria-describedby="phoneHint phoneError" data-i18n-placeholder="phonePlaceholder">
+            <small id="phoneHint" data-i18n="phoneHint"></small><p id="phoneError" class="field__error" data-error-for="phone" hidden></p>
+          </div>
+          <div class="field" data-field="region">
+            <label for="region" data-i18n="regionLabel"></label>
+            <select id="region" name="region" aria-describedby="regionError"><option value="" data-i18n="regionPlaceholder"></option></select>
+            <p id="regionError" class="field__error" data-error-for="region" hidden></p>
+          </div>
+          <fieldset class="field field--topics" data-field="topics" aria-describedby="topicsHint topicsError">
+            <legend data-i18n="topicsLabel"></legend>
+            <small id="topicsHint" data-i18n="topicsHint"></small>
+            <div id="topicsList" class="topic-list"></div>
+            <p id="topicsError" class="field__error" data-error-for="topics" hidden></p>
+          </fieldset>
+          <div class="field" data-field="prior">
+            <label for="prior" data-i18n="priorLabel"></label>
+            <select id="prior" name="prior" aria-describedby="priorError"><option value="" data-i18n="priorPlaceholder"></option></select>
+            <p id="priorError" class="field__error" data-error-for="prior" hidden></p>
+          </div>
+          <div class="field" data-field="call_time">
+            <label for="call_time" data-i18n="callTimeLabel"></label>
+            <select id="call_time" name="call_time" aria-describedby="callTimeError"><option value="" data-i18n="callTimePlaceholder"></option></select>
+            <p id="callTimeError" class="field__error" data-error-for="call_time" hidden></p>
+          </div>
+          <div id="sourceField" class="field" data-field="source">
+            <label for="source" data-i18n="sourceLabel"></label>
+            <select id="source" name="source" aria-describedby="sourceError"><option value="" data-i18n="sourcePlaceholder"></option></select>
+            <p id="sourceError" class="field__error" data-error-for="source" hidden></p>
+          </div>
+          <div class="field" data-field="comment">
+            <div class="field__row"><label for="comment" data-i18n="commentLabel"></label><span id="commentCounter" class="field__counter"></span></div>
+            <textarea id="comment" name="comment" rows="4" aria-describedby="commentHint commentError" data-i18n-placeholder="commentPlaceholder"></textarea>
+            <small id="commentHint" data-i18n="commentHint"></small><p id="commentError" class="field__error" data-error-for="comment" hidden></p>
+          </div>
+          <div class="field field--consent" data-field="consent">
+            <label class="consent"><input id="consent" name="consent" type="checkbox" aria-describedby="consentError"><span data-i18n="consentText"></span></label>
+            <p id="consentError" class="field__error" data-error-for="consent" hidden></p>
+          </div>
+          <button id="submitButton" class="button button--gold" type="submit" data-i18n="submit" disabled></button>
+          <p id="formMessage" class="form-message" role="status" aria-live="polite" hidden></p>
+        </form>
+        <div id="successPanel" class="success-panel" role="status" hidden>
+          <h3 data-i18n="successTitle"></h3><p data-i18n="successText"></p>
+        </div>
+      </section>
+      <p class="disclaimer" data-i18n="disclaimer"></p>
+      <footer class="closing" id="closingText"></footer>
+    </main>
+  </div>
+</body>
+</html>

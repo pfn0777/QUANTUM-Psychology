@@ -1,5 +1,8 @@
 export const UI = {
   cyr: {
+    wordmarkPrimary: "QUANTUM",
+    wordmarkSecondary: "Psychology",
+    scriptLabel: "Ёзувни танлаш",
     toggleCyr: "Кир",
     toggleLat: "Lot",
     heroEyebrow: "12 ОЙЛИК ДАСТУР",
@@ -55,6 +58,7 @@ export const UI = {
     openFromBot: "Аризани юбориш учун ботдаги тугма орқали очинг",
     disclaimer: "Дастур тиббий ёрдам ўрнини босмайди. Соғлиғингиз бўйича шифокорга мурожаат қилинг.",
     invalid_payload: "Ариза маълумотларини ўқиб бўлмади. Илтимос, қайта уриниб кўринг.",
+    sendFailed: "Аризани юбориб бўлмади. Илтимос, қайта уриниб кўринг.",
     err_name: "Исм ва фамилиянгизни тўғри киритинг.",
     err_age: "Ёшингизни 18 дан 99 гача киритинг.",
     err_phone: "Телефон рақамингизни тўғри киритинг.",
@@ -66,6 +70,9 @@ export const UI = {
     err_consent: "Аризани юбориш учун розилигингизни белгиланг.",
   },
   lat: {
+    wordmarkPrimary: "QUANTUM",
+    wordmarkSecondary: "Psychology",
+    scriptLabel: "Yozuvni tanlash",
     toggleCyr: "Кир",
     toggleLat: "Lot",
     heroEyebrow: "12 OYLIK DASTUR",
@@ -121,6 +128,7 @@ export const UI = {
     openFromBot: "Arizani yuborish uchun botdagi tugma orqali oching",
     disclaimer: "Dastur tibbiy yordam oʻrnini bosmaydi. Sogʻligʻingiz boʻyicha shifokorga murojaat qiling.",
     invalid_payload: "Ariza maʼlumotlarini oʻqib boʻlmadi. Iltimos, qayta urinib koʻring.",
+    sendFailed: "Arizani yuborib boʻlmadi. Iltimos, qayta urinib koʻring.",
     err_name: "Ism va familiyangizni toʻgʻri kiriting.",
     err_age: "Yoshingizni 18 dan 99 gacha kiriting.",
     err_phone: "Telefon raqamingizni toʻgʻri kiriting.",
