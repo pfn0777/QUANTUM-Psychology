@@ -59,6 +59,7 @@ EXPECTED_CODES = (
 )
 EXPECTED_COUNTS = (15, 8, 3, 3, 5)
 EXPECTED_TEXT_KEYS = {
+    "welcome_caption",
     "start_greeting",
     "open_button",
     "thanks",

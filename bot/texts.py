@@ -2,6 +2,7 @@
 
 TEXTS: dict[str, dict[str, str]] = {
     "cyr": {
+        "welcome_caption": "Ассалому алайкум! QUANTUM Psychology'га хуш келибсиз. 12 ойлик шахсий ва руҳий ривожланиш дастури. Бепул дастлабки суҳбатга ёзилиш учун қуйидаги тугмани босинг.",
         "start_greeting": "Ассалому алайкум! Бепул дастлабки суҳбат учун қуйидаги тугмани босинг.",
         "open_button": "Бепул суҳбатга ёзилиш",
         "thanks": "Аризангизни олдик. Сиз танлаган вақтда қўнғироқ қиламиз.",
@@ -20,6 +21,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "err_consent": "Илтимос, маълумотларингизни ушбу ариза учун ишлатишга розилигингизни белгиланг.",
     },
     "lat": {
+        "welcome_caption": "Assalomu alaykum! QUANTUM Psychology'ga xush kelibsiz. 12 oylik shaxsiy va ruhiy rivojlanish dasturi. Bepul dastlabki suhbatga yozilish uchun quyidagi tugmani bosing.",
         "start_greeting": "Assalomu alaykum! Bepul dastlabki suhbat uchun quyidagi tugmani bosing.",
         "open_button": "Bepul suhbatga yozilish",
         "thanks": "Arizangizni oldik. Siz tanlagan vaqtda qoʻngʻiroq qilamiz.",

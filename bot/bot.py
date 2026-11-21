@@ -14,7 +14,16 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
-from aiogram.types import BufferedInputFile, KeyboardButton, Message, ReplyKeyboardMarkup, WebAppInfo
+from aiogram.types import (
+    BufferedInputFile,
+    FSInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    Message,
+    ReplyKeyboardMarkup,
+    WebAppInfo,
+)
 from dotenv import dotenv_values
 
 import catalog
@@ -26,6 +35,7 @@ from storage import Storage
 
 logger = logging.getLogger(__name__)
 BOT_DIR = Path(__file__).resolve().parent
+WELCOME_PHOTO = BOT_DIR / "assets" / "welcome.png"
 DEFAULT_DB_PATH = BOT_DIR / "data" / "leads.db"
 STATS_DAYS = max(stats.PERIOD_DAYS)
 
@@ -75,17 +85,29 @@ def load_settings(env: dict[str, str] | None = None, dotenv_path: Path | None = 
     return Settings(token, admin_chat_id, webapp_url, db_path)
 
 
-def keyboard(settings: Settings, source: str | None = None) -> ReplyKeyboardMarkup:
+def webapp_url(settings: Settings, source: str | None = None) -> str:
     url = settings.webapp_url
     if source in catalog.DEEP_LINK_SOURCES:
         parts = urlsplit(url)
         query = parse_qsl(parts.query, keep_blank_values=True)
         query.append(("src", source))
         url = urlunsplit(parts._replace(query=urlencode(query)))
+    return url
+
+
+def keyboard(settings: Settings, source: str | None = None) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=texts.t("open_button"), web_app=WebAppInfo(url=url))]],
+        keyboard=[[KeyboardButton(text=texts.t("open_button"), web_app=WebAppInfo(url=webapp_url(settings, source)))]],
         resize_keyboard=True,
         is_persistent=True,
+    )
+
+
+def inline_keyboard(settings: Settings, source: str | None = None) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=texts.t("open_button"), web_app=WebAppInfo(url=webapp_url(settings, source)))]
+        ]
     )
 
 
@@ -102,6 +124,14 @@ class BotHandlers:
     async def start(self, message: Message) -> None:
         parts = (message.text or "").split(maxsplit=1)
         source = parts[1].strip() if len(parts) > 1 else None
+        try:
+            await message.answer_photo(
+                FSInputFile(WELCOME_PHOTO),
+                caption=texts.t("welcome_caption"),
+                reply_markup=inline_keyboard(self.settings, source),
+            )
+        except Exception as exc:
+            logger.error("Could not send welcome photo: %s", type(exc).__name__)
         await message.answer(texts.t("start_greeting"), reply_markup=keyboard(self.settings, source))
 
     async def web_app_data(self, message: Message, bot: Bot) -> None:

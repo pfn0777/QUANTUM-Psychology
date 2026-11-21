@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 from aiogram.enums import ParseMode
-from aiogram.types import BufferedInputFile
+from aiogram.types import BufferedInputFile, FSInputFile, InlineKeyboardMarkup, ReplyKeyboardMarkup
 
 import bot as bot_module
 from bot import BotHandlers, ConfigError, Settings, build_dispatcher, load_settings
@@ -41,16 +41,26 @@ class FakeChat:
 
 
 class FakeMessage:
-    def __init__(self, user, *, text=None, data=None, chat_id=1):
+    def __init__(self, user, *, text=None, data=None, chat_id=1, photo_error=None):
         self.from_user = user
         self.text = text
         self.chat = FakeChat(chat_id)
         self.web_app_data = SimpleNamespace(data=data) if data is not None else None
         self.answers = []
+        self.photos = []
+        self.calls = []
+        self.photo_error = photo_error
         self.documents = []
 
     async def answer(self, text, **kwargs):
+        self.calls.append("answer")
         self.answers.append((text, kwargs))
+
+    async def answer_photo(self, photo, **kwargs):
+        if self.photo_error is not None:
+            raise self.photo_error
+        self.calls.append("photo")
+        self.photos.append((photo, kwargs))
 
     async def answer_document(self, document, **kwargs):
         self.documents.append((document, kwargs))
@@ -123,8 +133,20 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     handlers.settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL + "?a=1", handlers.settings.db_path)
     source_message = FakeMessage(fake_user_factory(), text="/start ig")
     await handlers.start(source_message)
+    assert source_message.calls == ["photo", "answer"]
+    assert len(source_message.photos) == 1
+    photo, photo_kwargs = source_message.photos[0]
+    assert isinstance(photo, FSInputFile)
+    assert photo.path == bot_module.WELCOME_PHOTO
+    assert photo_kwargs["caption"] == t("welcome_caption")
+    inline_markup = photo_kwargs["reply_markup"]
+    assert isinstance(inline_markup, InlineKeyboardMarkup)
+    inline_button = inline_markup.inline_keyboard[0][0]
+    assert inline_button.text == t("open_button")
+    assert inline_button.web_app.url == WEBAPP_URL + "?a=1&src=ig"
     text, kwargs = source_message.answers[0]
     assert text == t("start_greeting")
+    assert isinstance(kwargs["reply_markup"], ReplyKeyboardMarkup)
     button = kwargs["reply_markup"].keyboard[0][0]
     assert button.text == t("open_button")
     assert button.web_app.url == WEBAPP_URL + "?a=1&src=ig"
@@ -138,6 +160,23 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     await handlers.fallback(fallback)
     assert fallback.answers[0][0] == t("fallback_hint")
     assert fallback.answers[0][1]["reply_markup"].keyboard[0][0].web_app.url == WEBAPP_URL + "?a=1"
+
+
+@pytest.mark.asyncio
+async def test_start_photo_error_still_sends_greeting(configured, fake_user_factory, caplog):
+    handlers, _ = configured
+    message = FakeMessage(fake_user_factory(), text="/start ig", photo_error=RuntimeError("photo unavailable"))
+
+    await handlers.start(message)
+
+    assert message.answers[0][0] == t("start_greeting")
+    assert isinstance(message.answers[0][1]["reply_markup"], ReplyKeyboardMarkup)
+    assert message.answers[0][1]["reply_markup"].keyboard[0][0].web_app.url == WEBAPP_URL + "?src=ig"
+    assert "Could not send welcome photo: RuntimeError" in caplog.text
+
+
+def test_welcome_photo_exists():
+    assert bot_module.WELCOME_PHOTO.exists()
 
 
 @pytest.mark.asyncio
