@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import {
   MODULES, INTRO, TWELVE_LINE, GOAL_TITLE, GOAL, AUDIENCE_TITLE,
   AUDIENCE, CLOSING, REGIONS, TOPICS, PRIOR, CALL_TIMES, SOURCES,
@@ -62,7 +62,7 @@ const EXPECTED_CATALOG = [
 ];
 const REQUIRED_UI_KEYS = [
   "toggleCyr", "toggleLat", "heroEyebrow", "heroTitle", "heroSubtitle",
-  "heroTagline", "heroTag", "heroTagText", "heroCta", "heroImageAlt", "aboutTitle",
+  "heroTagline", "heroTag", "heroTagText", "heroCta", "heroImageAlt", "heroImageSrc", "aboutTitle",
   "modulesTitle", "goalTitle", "audienceTitle", "founderTitle",
   "founderP1", "founderP2", "founderP3", "consultationTitle",
   "consultationStep1", "consultationStep2", "consultationStep3", "formTitle",
@@ -86,6 +86,7 @@ const SPEC_UI_CYR = {
   heroEyebrow: "12 ОЙЛИК ДАСТУР",
   heroTitle: "QUANTUM Psychology",
   heroImageAlt: "QUANTUM Psychology — 12 ойлик шахсий ва руҳий ривожланиш дастури. Фикр кучини бошқариш, ички мувозанат ва хотиржамлик, ҳаёт сифатини юксалтириш. Бепул дастлабки суҳбат.",
+  heroImageSrc: "assets/hero-banner-cyr.webp",
   heroSubtitle: "12 ойлик шахсий ва руҳий ривожланиш дастури",
   heroTagline: "Ички имкониятингизни очинг — янги даражага чиқинг",
   heroTag: "БЕПУЛ",
@@ -110,6 +111,7 @@ const SPEC_UI_CYR = {
 };
 const LATIN_SPOT_CHECKS = {
   heroImageAlt: "QUANTUM Psychology — 12 oylik shaxsiy va ruhiy rivojlanish dasturi. Fikr kuchini boshqarish, ichki muvozanat va xotirjamlik, hayot sifatini yuksaltirish. Bepul dastlabki suhbat.",
+  heroImageSrc: "assets/hero-banner.webp",
   heroEyebrow: "12 OYLIK DASTUR",
   heroSubtitle: "12 oylik shaxsiy va ruhiy rivojlanish dasturi",
   heroTagline: "Ichki imkoniyatingizni oching — yangi darajaga chiqing",
@@ -201,6 +203,17 @@ test("fixed UI copy matches section 9 verbatim in Cyrillic and Latin spot checks
   for (const [key, expected] of Object.entries(LATIN_SPOT_CHECKS)) {
     assert.equal(UI.lat[key], expected, `lat.${key}`);
   }
+});
+
+test("hero banner sources exist and initial HTML uses the Cyrillic source", () => {
+  for (const script of ["cyr", "lat"]) {
+    assert.ok(existsSync(new URL(`../${UI[script].heroImageSrc}`, import.meta.url)), `${script} hero banner is missing`);
+  }
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const heroImage = html.match(/<div class="hero__image"[^>]*><img\b([^>]*)>/u)?.[1];
+  assert.ok(heroImage, "hero image is missing");
+  assert.equal(heroImage.match(/\bsrc="([^"]+)"/u)?.[1], UI.cyr.heroImageSrc);
+  assert.match(heroImage, /\bdata-i18n-src="heroImageSrc"/u);
 });
 
 test("UI has equal scripts, required errors, fallback and no emoji", () => {

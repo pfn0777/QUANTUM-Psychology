@@ -66,6 +66,10 @@ function renderCopy() {
   for (const node of document.querySelectorAll("[data-i18n-aria-label]")) {
     node.setAttribute("aria-label", t(node.dataset.i18nAriaLabel, state.script));
   }
+  for (const node of document.querySelectorAll("[data-i18n-src]")) {
+    const value = t(node.dataset.i18nSrc, state.script);
+    if (node.getAttribute("src") !== value) node.src = value;
+  }
   $("introText").textContent = INTRO[state.script];
   $("twelveLine").textContent = TWELVE_LINE[state.script];
   $("goalTitle").textContent = GOAL_TITLE[state.script];
