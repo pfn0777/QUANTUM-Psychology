@@ -10,11 +10,16 @@ const MODULE_COUNT = 12;
 const TOPIC_COUNT = 2;
 const FORM_BUTTON_BOTTOM_GAP = 110;
 const SECTION_TOP_GAP = 28;
-const EXPECTED_HYPERFRAMES_VERSION = "0.9.72";
+const SUPPORTED_HYPERFRAMES_VERSIONS = ["0.9.72", "0.9.77"];
+const STORAGE_KEY = "qp_script";
+const LATIN_SCRIPT = "lat";
+const CYRILLIC_SCRIPT = "cyr";
+const SAMPLE_NAMES = { cyr: "Мадина Каримова", lat: "Madina Karimova" };
 const scriptDir = resolve(fileURLToPath(new URL(".", import.meta.url)));
 const promoDir = resolve(scriptDir, "..");
 const webRoot = resolve(promoDir, "..", "..", "webapp");
 const screensDir = join(promoDir, "assets", "screens");
+const latinScreensDir = join(promoDir, "assets", "screens-lat");
 const telegramScript = "https://telegram.org/js/telegram-web-app.js";
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -26,6 +31,17 @@ const mimeTypes = {
   ".webp": "image/webp",
   ".woff2": "font/woff2",
 };
+
+function parseCaptureOptions(args) {
+  if (args.length === 0) return { script: CYRILLIC_SCRIPT, measureToggleLat: false };
+  if (args.length === 1 && args[0] === "--measure-toggle-lat") {
+    return { script: CYRILLIC_SCRIPT, measureToggleLat: true };
+  }
+  if (args.length === 2 && args[0] === "--script" && [CYRILLIC_SCRIPT, LATIN_SCRIPT].includes(args[1])) {
+    return { script: args[1], measureToggleLat: false };
+  }
+  throw new Error("Usage: node capture-screens.mjs [--script cyr|lat | --measure-toggle-lat]");
+}
 
 async function loadPuppeteer() {
   try {
@@ -47,7 +63,7 @@ async function loadPuppeteer() {
     const puppeteerEntry = join(modulesDir, "puppeteer-core", "lib", "puppeteer", "puppeteer-core.js");
     if (!existsSync(hyperframesPackage) || !existsSync(puppeteerEntry)) continue;
     const { version } = JSON.parse(await readFile(hyperframesPackage, "utf8"));
-    if (version !== EXPECTED_HYPERFRAMES_VERSION) continue;
+    if (!SUPPORTED_HYPERFRAMES_VERSIONS.includes(version)) continue;
     console.info(`Using puppeteer-core bundled with cached HyperFrames ${version}.`);
     return (await import(pathToFileURL(puppeteerEntry).href)).default;
   }
@@ -120,7 +136,7 @@ async function startServer() {
   return { server, url: `http://127.0.0.1:${address.port}/` };
 }
 
-async function waitForPageAssets(page) {
+async function waitForPageAssets(page, script) {
   await page.waitForFunction((expectedModules) =>
     document.querySelectorAll("#modulesList .module-card").length === expectedModules &&
     document.querySelectorAll("#topicsList input[type=checkbox]").length >= 2 &&
@@ -132,7 +148,14 @@ async function waitForPageAssets(page) {
   });
   await page.addStyleTag({ content: "html { scroll-behavior: auto !important; } *, *::before, *::after { animation: none !important; transition: none !important; }" });
   const language = await page.evaluate(() => document.documentElement.lang);
-  if (language !== "uz-Cyrl") throw new Error(`Expected Cyrillic mode, got ${language}.`);
+  const expectedLanguage = script === LATIN_SCRIPT ? "uz-Latn" : "uz-Cyrl";
+  if (language !== expectedLanguage) throw new Error(`Expected ${expectedLanguage} mode, got ${language}.`);
+  if (script === LATIN_SCRIPT) {
+    const heroImage = await page.$eval(".hero__image img", (image) => image.currentSrc);
+    if (!heroImage.endsWith("/assets/hero-banner.webp")) {
+      throw new Error(`Expected Latin hero banner, got ${heroImage}.`);
+    }
+  }
 }
 
 async function scrollToElement(page, selector, gap = SECTION_TOP_GAP) {
@@ -142,19 +165,19 @@ async function scrollToElement(page, selector, gap = SECTION_TOP_GAP) {
   }, gap);
 }
 
-async function captureViewport(page, name) {
-  await page.screenshot({ path: join(screensDir, name), captureBeyondViewport: false });
+async function captureViewport(page, name, outputDir) {
+  await page.screenshot({ path: join(outputDir, name), captureBeyondViewport: false });
   console.info(`Captured ${name}`);
 }
 
-async function captureModulesLong(page) {
+async function captureModulesLong(page, outputDir) {
   const clip = await page.$eval("#modulesList", (list, viewportWidth) => {
     const section = list.closest("section");
     if (!section) throw new Error("Modules section is missing.");
     const rect = section.getBoundingClientRect();
     return { x: 0, y: rect.top + window.scrollY, width: viewportWidth, height: rect.height };
   }, VIEWPORT.width);
-  await page.screenshot({ path: join(screensDir, "02-modules-long.png"), clip, captureBeyondViewport: true });
+  await page.screenshot({ path: join(outputDir, "02-modules-long.png"), clip, captureBeyondViewport: true });
   console.info("Captured 02-modules-long.png");
 }
 
@@ -165,8 +188,9 @@ async function selectFirstRealOption(page, selector) {
   return value;
 }
 
-async function fillForm(page) {
-  await page.type("#name", "Мадина Каримова");
+async function fillForm(page, script, outputDir) {
+  const sampleName = SAMPLE_NAMES[script];
+  await page.type("#name", sampleName);
   await page.type("#age", "29");
   await page.$eval("#phone", (input) => {
     input.value = "+998 90 123 45 67";
@@ -176,6 +200,13 @@ async function fillForm(page) {
   await selectFirstRealOption(page, "#prior");
   await selectFirstRealOption(page, "#call_time");
   await selectFirstRealOption(page, "#source");
+  if (script === LATIN_SCRIPT) {
+    const selectedLabels = await page.$$eval("#region, #prior, #call_time, #source", (selects) =>
+      selects.map((select) => select.selectedOptions[0]?.textContent ?? ""));
+    if (selectedLabels.some((label) => /[\u0400-\u04FF]/u.test(label))) {
+      throw new Error(`Expected Latin form options, got ${JSON.stringify(selectedLabels)}.`);
+    }
+  }
   await page.$$eval("#topicsList input[type=checkbox]", (inputs, count) => {
     if (inputs.length < count) throw new Error("Insufficient topic options.");
     inputs.slice(0, count).forEach((input) => input.click());
@@ -193,22 +224,23 @@ async function fillForm(page) {
     consent: document.querySelector("#consent").checked,
     submitEnabled: !document.querySelector("#submitButton").disabled,
   }));
-  if (state.name !== "Мадина Каримова" || state.age !== "29" ||
+  if (state.name !== sampleName || state.age !== "29" ||
       state.phone !== "+998 90 123 45 67" || state.region !== region ||
       state.topics !== TOPIC_COUNT || !state.prior || !state.callTime || !state.source ||
       !state.consent || !state.submitEnabled) {
     throw new Error(`Form state is incomplete: ${JSON.stringify(state)}`);
   }
   await scrollToElement(page, ".section--form");
-  await captureViewport(page, "03a-form-top.png");
+  await captureViewport(page, "03a-form-top.png", outputDir);
   await page.$eval("#submitButton", (button, bottomGap) => {
     const top = window.scrollY + button.getBoundingClientRect().bottom - window.innerHeight + bottomGap;
     window.scrollTo(0, Math.max(0, top));
   }, FORM_BUTTON_BOTTOM_GAP);
 }
 
-async function captureScreens() {
-  await mkdir(screensDir, { recursive: true });
+async function captureScreens(options) {
+  const outputDir = options.script === LATIN_SCRIPT ? latinScreensDir : screensDir;
+  if (!options.measureToggleLat) await mkdir(outputDir, { recursive: true });
   const puppeteer = await loadPuppeteer();
   const { server, url } = await startServer();
   let browser;
@@ -225,6 +257,9 @@ async function captureScreens() {
     const page = await browser.newPage();
     await page.setViewport(VIEWPORT);
     await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+    if (options.script === LATIN_SCRIPT) {
+      await page.evaluateOnNewDocument((key, value) => window.localStorage.setItem(key, value), STORAGE_KEY, LATIN_SCRIPT);
+    }
     const pageErrors = [];
     page.on("pageerror", (error) => { pageErrors.push(error); console.error("Page error:", error); });
     page.on("requestfailed", (request) => console.error(`Request failed: ${request.url()} (${request.failure()?.errorText})`));
@@ -232,24 +267,34 @@ async function captureScreens() {
     const response = await page.goto(url, { waitUntil: "networkidle0" });
     if (response?.status() !== 200) throw new Error(`Mini app returned HTTP ${response?.status()}.`);
     console.info("Page loaded; waiting for dynamic content and assets.");
-    await waitForPageAssets(page);
+    await waitForPageAssets(page, options.script);
     if (pageErrors.length) throw new AggregateError(pageErrors, "Mini app failed to initialize.");
 
+    if (options.measureToggleLat) {
+      const css = await page.$eval("#toggleLat", (button) => {
+        const { x, y, width, height } = button.getBoundingClientRect();
+        return { x, y, width, height };
+      });
+      const screenshot = Object.fromEntries(Object.entries(css).map(([key, value]) => [key, value * VIEWPORT.deviceScaleFactor]));
+      console.info(`Lotin button bounding box: ${JSON.stringify({ css, screenshot })}`);
+      return;
+    }
+
     await page.evaluate(() => window.scrollTo(0, 0));
-    await captureViewport(page, "01-hero.png");
+    await captureViewport(page, "01-hero.png", outputDir);
     await scrollToElement(page, ".section--about");
-    await captureViewport(page, "05-about.png");
+    await captureViewport(page, "05-about.png", outputDir);
     await scrollToElement(page, "#modulesList", SECTION_TOP_GAP + 90);
-    await captureViewport(page, "02-modules.png");
-    await captureModulesLong(page);
-    await fillForm(page);
-    await captureViewport(page, "03-form.png");
+    await captureViewport(page, "02-modules.png", outputDir);
+    await captureModulesLong(page, outputDir);
+    await fillForm(page, options.script, outputDir);
+    await captureViewport(page, "03-form.png", outputDir);
     await page.evaluate(() => {
       document.querySelector("#leadForm").hidden = true;
       document.querySelector("#successPanel").hidden = false;
     });
     await scrollToElement(page, ".section--form");
-    await captureViewport(page, "04-success.png");
+    await captureViewport(page, "04-success.png", outputDir);
     if (pageErrors.length) throw new AggregateError(pageErrors, "Mini app failed during capture.");
   } finally {
     try {
@@ -260,7 +305,7 @@ async function captureScreens() {
   }
 }
 
-captureScreens().catch((error) => {
+Promise.resolve().then(() => captureScreens(parseCaptureOptions(process.argv.slice(2)))).catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
