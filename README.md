@@ -10,7 +10,7 @@ Bu loyiha 12 modulli dastur haqida ma'lumot beradigan Telegram Mini App va bepul
 | `bot/data/` | SQLite ma'lumotlari; Git'ga kiritilmaydi |
 | `webapp/` | Statik HTML, CSS, JavaScript, shriftlar va testlar |
 | `deploy/quantum-bot.service` | Linux systemd xizmat fayli |
-| `vercel.json` | Vercel'da `webapp/` papkasini chiqarish sozlamasi |
+| `webapp/vercel.json` | Vercel sozlamasi (Root Directory = webapp) |
 
 ## Lokal ishga tushirish
 
@@ -49,7 +49,7 @@ Xabar oladigan shaxs o'z Telegram akkauntidan `@userinfobot` ga `/start` yuborib
 
 ## Mini App'ni Vercel'da chiqarish
 
-Vercel'da ushbu repozitoriyni yangi loyiha sifatida import qiling. Loyiha ildizi repozitoriy ildizi bo'lsin; `vercel.json` statik `webapp/` papkasini chiqish papkasi sifatida belgilaydi. Deploy tugagach, berilgan `https://...vercel.app` manzilini `bot/.env` dagi `WEBAPP_URL` ga yozing. Botni yangi manzil bilan qayta ishga tushiring.
+Vercel'da ushbu repozitoriyni yangi loyiha sifatida import qiling. Root Directory = `webapp`, Framework Preset = Other qilib belgilang; build/install buyruqlarini kiritmang. Sozlamalar `webapp/vercel.json` faylida. Deploy tugagach, berilgan `https://...vercel.app` manzilini `bot/.env` dagi `WEBAPP_URL` ga yozing. Botni yangi manzil bilan qayta ishga tushiring.
 
 Botning uzoq so'rovli (`long polling`) jarayoni Vercel'da emas, doimiy ishlaydigan serverda turadi.
 
