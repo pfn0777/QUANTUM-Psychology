@@ -1,0 +1,11 @@
+/bot/
+/scripts/
+/deploy/
+/docs/
+/brand/
+/pytest.ini
+/.pytest_cache/
+/*.md
+/*.txt
+/*.png
+/webapp/tests/
