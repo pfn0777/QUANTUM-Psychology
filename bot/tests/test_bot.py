@@ -178,25 +178,23 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     handlers.settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL + "?a=1", handlers.settings.db_path)
     source_message = FakeMessage(fake_user_factory(), text="/start ig")
     await handlers.start(source_message)
-    assert source_message.calls == ["photo", "answer", "answer"]
+    assert source_message.calls == ["photo", "answer"]
     assert len(source_message.photos) == 1
+    assert len(source_message.answers) == 1
     photo, photo_kwargs = source_message.photos[0]
     assert isinstance(photo, FSInputFile)
     assert photo.path == bot_module.WELCOME_PHOTO
     assert photo_kwargs["caption"] == t("welcome_caption")
-    assert "reply_markup" not in photo_kwargs
+    assert isinstance(photo_kwargs["reply_markup"], InlineKeyboardMarkup)
+    info_button = photo_kwargs["reply_markup"].inline_keyboard[0][0]
+    assert info_button.text == t("more_info_button")
+    assert info_button.url == "https://birjoyda.vercel.app/quantum-psychology"
     text, kwargs = source_message.answers[0]
-    assert text == t("start_greeting")
+    assert text == "👇"
     assert isinstance(kwargs["reply_markup"], ReplyKeyboardMarkup)
     button = kwargs["reply_markup"].keyboard[0][0]
     assert button.text == t("open_button")
     assert button.web_app.url == WEBAPP_URL + "?a=1&src=ig"
-    info_text, info_kwargs = source_message.answers[1]
-    assert info_text == t("more_info_text")
-    assert isinstance(info_kwargs["reply_markup"], InlineKeyboardMarkup)
-    info_button = info_kwargs["reply_markup"].inline_keyboard[0][0]
-    assert info_button.text == t("more_info_button")
-    assert info_button.url == "https://birjoyda.vercel.app/quantum-psychology"
     unknown_message = FakeMessage(fake_user_factory(), text="/start unknown")
     await handlers.start(unknown_message)
     assert unknown_message.answers[0][1]["reply_markup"].keyboard[0][0].web_app.url == WEBAPP_URL + "?a=1"
@@ -216,15 +214,19 @@ async def test_start_photo_error_still_sends_greeting(configured, fake_user_fact
 
     await handlers.start(message)
 
-    assert message.answers[0][0] == t("start_greeting")
-    assert isinstance(message.answers[0][1]["reply_markup"], ReplyKeyboardMarkup)
-    assert message.answers[0][1]["reply_markup"].keyboard[0][0].web_app.url == WEBAPP_URL + "?src=ig"
-    info_text, info_kwargs = message.answers[1]
-    assert info_text == t("more_info_text")
-    assert isinstance(info_kwargs["reply_markup"], InlineKeyboardMarkup)
-    info_button = info_kwargs["reply_markup"].inline_keyboard[0][0]
+    assert message.photos == []
+    assert message.calls == ["answer", "answer"]
+    assert len(message.answers) == 2
+    assert message.answers[0][0] == t("welcome_caption")
+    assert isinstance(message.answers[0][1]["reply_markup"], InlineKeyboardMarkup)
+    info_button = message.answers[0][1]["reply_markup"].inline_keyboard[0][0]
     assert info_button.text == t("more_info_button")
     assert info_button.url == "https://birjoyda.vercel.app/quantum-psychology"
+    assert message.answers[1][0] == "👇"
+    assert isinstance(message.answers[1][1]["reply_markup"], ReplyKeyboardMarkup)
+    button = message.answers[1][1]["reply_markup"].keyboard[0][0]
+    assert button.text == t("open_button")
+    assert button.web_app.url == WEBAPP_URL + "?src=ig"
     assert "Could not send welcome photo: RuntimeError" in caplog.text
 
 

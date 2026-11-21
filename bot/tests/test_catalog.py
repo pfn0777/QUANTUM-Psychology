@@ -64,7 +64,6 @@ EXPECTED_TEXT_KEYS = {
     "cmd_export",
     "welcome_caption",
     "start_greeting",
-    "more_info_text",
     "more_info_button",
     "open_button",
     "thanks",
@@ -155,10 +154,12 @@ def test_text_keys_and_messages() -> None:
     assert set(TEXTS["cyr"]) == set(TEXTS["lat"]) == EXPECTED_TEXT_KEYS
     for messages in TEXTS.values():
         assert all(isinstance(message, str) and message.strip() for message in messages.values())
+        assert messages["start_greeting"] == "👇"
         assert all(
             ord(char) < EMOJI_HIGH_START
             and not EMOJI_MISC_START <= ord(char) <= EMOJI_MISC_END
-            for message in messages.values()
+            for key, message in messages.items()
+            if key != "start_greeting"
             for char in message
         )
 
@@ -178,11 +179,16 @@ def test_text_formatting(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_required_client_copy() -> None:
+    expected_captions = {
+        "cyr": "Ассалому алайкум! QUANTUM Psychology’га хуш келибсиз. Бизда шахсий ва руҳий ривожланиш учун 12 ойлик дастур бор. Дастур ҳақида танишишни истасангиз, пастдаги «Бепул суҳбатга ёзилиш» тугмани босинг. Дастлабки суҳбат бепул.",
+        "lat": "Assalomu alaykum! QUANTUM Psychology’ga xush kelibsiz. Bizda shaxsiy va ruhiy rivojlanish uchun 12 oylik dastur bor. Dastur haqida tanishishni istasangiz, pastdagi «Bepul suhbatga yozilish» tugmani bosing. Dastlabki suhbat bepul.",
+    }
     for script in SCRIPTS:
-        greeting = TEXTS[script]["start_greeting"]
+        caption = TEXTS[script]["welcome_caption"]
         thanks = TEXTS[script]["thanks"]
-        assert ("Бепул дастлабки суҳбат" if script == "cyr" else "Bepul dastlabki suhbat") in greeting
-        assert ("тугмани босинг" if script == "cyr" else "tugmani bosing") in greeting
+        assert caption == expected_captions[script]
+        assert ("Дастлабки суҳбат бепул" if script == "cyr" else "Dastlabki suhbat bepul") in caption
+        assert ("тугмани босинг" if script == "cyr" else "tugmani bosing") in caption
         assert ("Сиз танлаган вақтда" if script == "cyr" else "Siz tanlagan vaqtda") in thanks
         assert "18–99" in TEXTS[script]["err_age"]
         assert "+998 XX XXX XX XX" in TEXTS[script]["err_phone"]

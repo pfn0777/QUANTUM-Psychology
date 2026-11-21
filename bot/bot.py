@@ -155,11 +155,12 @@ class BotHandlers:
             await message.answer_photo(
                 FSInputFile(WELCOME_PHOTO),
                 caption=texts.t("welcome_caption"),
+                reply_markup=more_info_keyboard(),
             )
         except Exception as exc:
             logger.error("Could not send welcome photo: %s", type(exc).__name__)
+            await message.answer(texts.t("welcome_caption"), reply_markup=more_info_keyboard())
         await message.answer(texts.t("start_greeting"), reply_markup=keyboard(self.settings, source))
-        await message.answer(texts.t("more_info_text"), reply_markup=more_info_keyboard())
 
     async def web_app_data(self, message: Message, bot: Bot) -> None:
         user = message.from_user
