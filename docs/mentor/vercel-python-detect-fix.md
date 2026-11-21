@@ -1,5 +1,5 @@
 # Vercel deploy: Python detection fix
-Holat: TUGADI
+Holat: TUGADI (foydalanuvchi tekshiruvi kutilmoqda)
 Ijrochi: codex
 Turi: XATO · Hajm: KICHIK
 Spec: yo'q
@@ -26,8 +26,16 @@ Qabul mezonlari: vercel.json valid JSON, framework/buildCommand/installCommand =
 - Sabab: dashboard'da Framework Preset = Python. vercel.json dagi `"framework": null` Vercel CLI 66 da "o'rnatilmagan" deb o'qiladi va dashboard preset'i (Python) ishlaydi; Python preset outputDirectory'ni e'tiborsiz qoldiradi. Bot fayllari .vercelignore bilan chiqarilgani uchun endi yiqilmaydi, lekin bo'sh chiqadi.
 - Yechim: dashboard → Framework Preset = Other (foydalanuvchi qiladi). Kod o'zgarishi kerak emas.
 
+## Tahlil 3
+- Preset=Other + Redeploy (5qEXxBTZ3) ham bo'sh: "no functions/static/services". Ildiz + outputDirectory usuli CLI 66 da ishonchsiz.
+- Yechim (tasdiqlangan): Root Directory = webapp; vercel.json → webapp/vercel.json; ildiz .vercelignore o'chiriladi → webapp/.vercelignore (tests/); README yangilanadi.
+
+### To'lqin 2 — TUGADI
+- [x] 2. webapp/vercel.json + webapp/.vercelignore + ildiz fayllarni o'chirish + README (commit 5e97823, 1-urinishda; testlar 35/35)
+- [x] 3. (mentor, Chrome) Root Directory = webapp (saqlandi, qayta yuklab tekshirildi)
+
 ## Foydalanuvchi vazifalari
 - [x] Framework Preset: Python → Other (mentor Chrome orqali, foydalanuvchi ruxsati bilan, saqlandi)
-- [ ] Oxirgi deploy'ni (7c5a0d9) Redeploy qilish va saytni tekshirish
-- [ ] git push → Vercel build logini tekshirish
-- [ ] Baribir yiqilsa: Settings → Build and Deployment → Framework Preset → Other
+- [ ] git push → Vercel yangi commitni avtomatik deploy qiladi (eski deploy'ni Redeploy QILMASLIK)
+- [ ] Build logida "no functions/static/services" ogohlantirishi yo'qligini tekshirish
+- [ ] quantum-psychology-blond.vercel.app ochilib, Mini App ko'rinishini tekshirish
