@@ -199,6 +199,8 @@ async function fillForm(page) {
       !state.consent || !state.submitEnabled) {
     throw new Error(`Form state is incomplete: ${JSON.stringify(state)}`);
   }
+  await scrollToElement(page, ".section--form");
+  await captureViewport(page, "03a-form-top.png");
   await page.$eval("#submitButton", (button, bottomGap) => {
     const top = window.scrollY + button.getBoundingClientRect().bottom - window.innerHeight + bottomGap;
     window.scrollTo(0, Math.max(0, top));

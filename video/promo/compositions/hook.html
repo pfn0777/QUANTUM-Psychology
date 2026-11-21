@@ -1,0 +1,17 @@
+<template><style>
+#root{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#24095a,#160536 70%);overflow:hidden}
+#hook-mark{position:absolute;left:330px;top:410px;width:420px;height:420px;filter:drop-shadow(0 0 38px #ffcf5a)}
+#hook-wordmark{position:absolute;left:108px;top:925px;width:864px;text-align:center;font:700 112px/1 'Cormorant Garamond';letter-spacing:.03em}
+#hook-wordmark i{display:block;font-weight:500;font-size:104px}
+.particle{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffcf5a;box-shadow:0 0 22px #ffe39a}
+</style><div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+<div id="hook-stage" class="clip" data-start="0" data-duration="2.791">
+<div id="hook-particles"></div><img id="hook-mark" src="assets/logo-mark.svg" alt=""><div id="hook-wordmark" class="gold">QUANTUM <i>Psychology</i></div>
+</div></div><script>
+let seed=47291;const random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
+const field=document.querySelector('#hook-particles');for(let i=0;i<45;i++){const p=document.createElement('b');p.className='particle';p.style.left=(110+random()*860)+'px';p.style.top=(250+random()*1100)+'px';p.style.opacity=.18+random()*.5;field.append(p)}
+const tl=gsap.timeline({paused:true});tl.fromTo('#hook-mark',{opacity:0,scale:.7,rotation:-35},{opacity:1,scale:1,rotation:0,duration:1.1,ease:'power4.out'},0);
+tl.fromTo('#hook-wordmark',{opacity:0,filter:'blur(12px)'},{opacity:1,filter:'blur(0px)',duration:.42,ease:'power4.out'},.68);
+tl.to('#hook-stage',{opacity:0,scale:1.05,duration:.28,ease:'power2.in'},2.5);
+window.__timelines.hook=tl;
+</script></template>

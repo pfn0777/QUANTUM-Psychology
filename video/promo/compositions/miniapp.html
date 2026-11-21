@@ -1,0 +1,20 @@
+<template><style>
+#root{position:absolute;inset:0;background:radial-gradient(circle at 50% 49%,#24095a,#160536 72%)}
+#mini-phone{position:absolute;left:110px;top:315px;width:860px;height:1280px;border:16px solid #9b5cff;border-radius:76px;background:#160536;overflow:hidden;box-shadow:0 0 95px #7b2cf0}
+#mini-screen{position:absolute;inset:10px;border-radius:51px;overflow:hidden;background:#24095a}
+#mini-hero,#mini-modules{position:absolute;left:0;top:0;width:100%;height:auto}
+#mini-modules{opacity:0}
+#mini-caption{position:absolute;left:108px;top:1620px;width:864px;text-align:center;font:700 45px 'Cormorant Garamond';color:#ffe39a}
+</style><div id="root" data-composition-id="miniapp" data-width="1080" data-height="1920">
+<div id="mini-stage" class="clip" data-start="0" data-duration="5.582">
+<div id="mini-phone"><div id="mini-screen">
+<img id="mini-hero" src="assets/screens/01-hero.png" alt=""><img id="mini-modules" src="assets/screens/02-modules-long.png" alt="">
+</div></div><div id="mini-caption">12 ойлик дастур · 12 модуль</div>
+</div></div><script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#mini-phone',{y:1200,opacity:.8},{y:0,opacity:1,duration:.75,ease:'power4.out'},0);
+tl.fromTo('#mini-modules',{opacity:0,y:1150},{opacity:1,y:0,duration:.6,ease:'power2.inOut'},1.65);
+tl.to('#mini-hero',{opacity:0,duration:.35},1.85);
+tl.to('#mini-modules',{y:-1840,duration:2.55,ease:'power2.inOut'},2.3);
+tl.to('#mini-stage',{opacity:0,duration:.28},5.29);window.__timelines.miniapp=tl;
+</script></template>

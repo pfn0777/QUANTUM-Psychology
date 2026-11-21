@@ -1,0 +1,18 @@
+<template><style>
+#root{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,#24095a,#160536 73%)}
+#cta-mark{position:absolute;left:405px;top:350px;width:270px;height:270px;filter:drop-shadow(0 0 40px #ffcf5a)}
+#cta-heading{position:absolute;left:108px;top:730px;width:864px;text-align:center;font:700 99px/1.04 'Cormorant Garamond';color:#ffe39a}
+#cta-handle{position:absolute;left:108px;top:1020px;width:864px;text-align:center;font:700 51px 'Montserrat';color:#e4d8ff}
+#cta-button{position:absolute;left:130px;top:1210px;width:820px;height:112px;border-radius:28px;background:linear-gradient(120deg,#f5b52e,#ffe39a,#ffcf5a);display:grid;place-items:center;font:800 41px 'Montserrat';color:#160536;box-shadow:0 0 62px #7b2cf0}
+</style><div id="root" data-composition-id="cta" data-width="1080" data-height="1920">
+<div id="cta-stage" class="clip" data-start="0" data-duration="6.279">
+<img id="cta-mark" src="assets/logo-mark.svg" alt=""><div id="cta-heading">Дастлабки суҳбат —<br>БЕПУЛ</div><div id="cta-handle">@quantum_PsyBot</div><div id="cta-button">Бепул суҳбатга ёзилиш</div>
+</div></div><script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#cta-mark',{opacity:0,scale:.65,rotation:-20},{opacity:1,scale:1,rotation:0,duration:.8,ease:'power4.out'},0);
+tl.fromTo('#cta-heading',{opacity:0,filter:'blur(10px)'},{opacity:1,filter:'blur(0px)',duration:.45},.5);
+tl.fromTo('#cta-handle',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power4.out'},1.1);
+tl.fromTo('#cta-button',{opacity:0,scale:.9},{opacity:1,scale:1,duration:.55,ease:'power4.out'},1.5);
+tl.to('#cta-button',{scale:1.035,duration:.22,ease:'power2.out'},3.05).to('#cta-button',{scale:1,duration:.3,ease:'power2.inOut'},3.27);
+window.__timelines.cta=tl;
+</script></template>

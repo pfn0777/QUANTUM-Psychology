@@ -1,0 +1,16 @@
+<template><style>
+#root{position:absolute;inset:0;background:radial-gradient(circle at 50% 52%,#24095a,#160536 72%)}
+#promise-content{position:absolute;left:108px;top:620px;width:864px;text-align:center}
+#promise-first,#promise-second{font:700 72px/1.08 'Cormorant Garamond';margin:0 0 40px}
+#promise-content .promise-line{white-space:nowrap}
+#promise-first span,#promise-second span{display:inline-block;white-space:nowrap;margin:0 8px}
+#promise-second{font-size:90px}
+</style><div id="root" data-composition-id="promise" data-width="1080" data-height="1920">
+<div id="promise-stage" class="clip" data-start="0" data-duration="4.186">
+<div id="promise-content"><div id="promise-first"><div class="promise-line"><span>Ички</span><span>имкониятингизни</span></div><div class="promise-line"><span>очинг —</span></div></div><div id="promise-second" class="gold"><div class="promise-line"><span>янги</span><span>даражага</span></div><div class="promise-line"><span>чиқинг</span></div></div></div>
+</div></div><script>
+const tl=gsap.timeline({paused:true});const words=document.querySelectorAll('#promise-content span');
+words.forEach((word,i)=>tl.fromTo(word,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:.3,ease:'power4.out'},i*.6977));
+tl.to('#promise-stage',{opacity:0,scale:1.04,duration:.3,ease:'power2.in'},3.84);
+window.__timelines.promise=tl;
+</script></template>
