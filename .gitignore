@@ -24,3 +24,8 @@ venv/
 /telegram post.txt
 /instagram-audience-report.md
 /telegram-audience-report.md
+video/out/
+video/audio/
+video/promo/assets/audio/
+video/promo/renders/
+video/promo/snapshots/
