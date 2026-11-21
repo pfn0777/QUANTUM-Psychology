@@ -1,17 +1,44 @@
 <template><style>
-#root{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#24095a,#160536 70%);overflow:hidden}
-#hook-mark{position:absolute;left:330px;top:410px;width:420px;height:420px;filter:drop-shadow(0 0 38px #ffcf5a)}
-#hook-wordmark{position:absolute;left:108px;top:925px;width:864px;text-align:center;font:700 112px/1 'Cormorant Garamond';letter-spacing:.03em}
-#hook-wordmark i{display:block;font-weight:500;font-size:104px}
-.particle{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffcf5a;box-shadow:0 0 22px #ffe39a}
+#root{position:absolute;inset:0;overflow:hidden;background:#160536}
+#hook-stage{position:absolute;inset:0}
+#hook-background{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:50% 70%}
+#hook-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 57%,transparent 19%,rgba(9,2,28,.28) 64%,rgba(5,1,18,.7) 100%)}
+#hook-grain{position:absolute;inset:0;opacity:.12;pointer-events:none}
+#hook-copy{position:absolute;left:90px;top:575px;width:900px;height:640px;text-align:center;z-index:2}
+.hook-line{position:absolute;left:0;width:900px;white-space:nowrap;line-height:1.1;text-shadow:0 5px 18px #080218,0 0 38px #080218}
+#hook-line-one{top:0;font:800 84px/1.1 'Montserrat',sans-serif}
+#hook-gold-wrap{position:absolute;left:0;top:172px;width:900px;text-align:center;filter:drop-shadow(0 3px 8px #080218) drop-shadow(0 0 18px rgba(255,207,90,.8))}
+#hook-line-two{position:relative;left:auto;display:inline-block;width:auto;font:italic 600 132px/1.1 'Cormorant Garamond',serif;letter-spacing:-.025em;background:linear-gradient(125deg,#f5b52e,#ffe39a 50%,#ffcf5a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;text-shadow:none;opacity:0;visibility:hidden}
+#hook-line-three{top:385px;font:800 84px/1.1 'Montserrat',sans-serif;opacity:0;visibility:hidden}
+.hook-echo{position:absolute;left:0;top:172px;width:900px;white-space:nowrap;font:italic 600 132px/1.1 'Cormorant Garamond',serif;letter-spacing:-.025em;color:#ffe39a;opacity:0;visibility:hidden;text-shadow:0 0 14px #ffcf5a;pointer-events:none}
+#hook-flash{position:absolute;inset:0;width:1080px;height:1920px;z-index:3;opacity:0;transform-origin:50% 72%;background:radial-gradient(ellipse at 50% 72%,#fffdf6 0%,#fff5d6 28%,rgba(255,227,154,.96) 51%,rgba(255,207,90,.65) 72%,rgba(245,181,46,0) 100%);pointer-events:none}
 </style><div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
 <div id="hook-stage" class="clip" data-start="0" data-duration="2.791">
-<div id="hook-particles"></div><img id="hook-mark" src="assets/logo-mark.svg" alt=""><div id="hook-wordmark" class="gold">QUANTUM <i>Psychology</i></div>
+<img id="hook-background" src="assets/hook/hook-bg-a.png" alt="">
+<div id="hook-vignette" data-layout-ignore aria-hidden="true"></div>
+<svg id="hook-grain" viewBox="0 0 1080 1920" preserveAspectRatio="none" data-layout-ignore aria-hidden="true"><filter id="hook-noise"><feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="2" seed="47291" stitchTiles="stitch"/></filter><rect width="1080" height="1920" filter="url(#hook-noise)" opacity=".25"/></svg>
+<div id="hook-copy">
+<div id="hook-line-one" class="hook-line" data-layout-allow-safe-zone>Нега ҳаётингизда</div>
+<div id="hook-gold-wrap"><div id="hook-line-two" class="hook-line gold" data-layout-allow-safe-zone>бир хил муаммо</div></div>
+<div id="hook-line-three" class="hook-line" data-layout-allow-safe-zone>такрорланади?</div>
+<div id="hook-echo-one" class="hook-echo" data-layout-ignore aria-hidden="true">бир хил муаммо</div>
+<div id="hook-echo-two" class="hook-echo" data-layout-ignore aria-hidden="true">бир хил муаммо</div>
+</div><div id="hook-flash" data-layout-ignore aria-hidden="true"></div>
 </div></div><script>
-let seed=47291;const random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
-const field=document.querySelector('#hook-particles');for(let i=0;i<45;i++){const p=document.createElement('b');p.className='particle';p.style.left=(110+random()*860)+'px';p.style.top=(250+random()*1100)+'px';p.style.opacity=.18+random()*.5;field.append(p)}
-const tl=gsap.timeline({paused:true});tl.fromTo('#hook-mark',{opacity:0,scale:.7,rotation:-35},{opacity:1,scale:1,rotation:0,duration:1.1,ease:'power4.out'},0);
-tl.fromTo('#hook-wordmark',{opacity:0,filter:'blur(12px)'},{opacity:1,filter:'blur(0px)',duration:.42,ease:'power4.out'},.68);
-tl.to('#hook-stage',{opacity:0,scale:1.05,duration:.28,ease:'power2.in'},2.5);
+const HOOK_DURATION=2.791;
+const LINE_TWO_BEAT=.698;
+const LINE_THREE_BEAT=1.395;
+const ECHO_BEAT=2.093;
+const FLASH_BEAT=2.45;
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#hook-background',{scale:1},{scale:1.08,duration:HOOK_DURATION,ease:'none'},0);
+tl.fromTo('#hook-line-one',{scale:1.04},{scale:1,duration:.25,ease:'power3.out'},0);
+tl.fromTo('#hook-line-two',{opacity:0,visibility:'hidden',scale:1.18},{opacity:1,visibility:'visible',scale:1,duration:.12,ease:'power3.out',immediateRender:false},LINE_TWO_BEAT);
+tl.fromTo('#hook-line-three',{opacity:0,visibility:'hidden',y:40},{opacity:1,visibility:'visible',y:0,duration:.3,ease:'power3.out',immediateRender:false},LINE_THREE_BEAT);
+tl.fromTo('#hook-echo-one',{opacity:.25,visibility:'visible',y:0},{opacity:0,visibility:'hidden',y:-90,duration:.45,ease:'power2.out',immediateRender:false},ECHO_BEAT);
+tl.fromTo('#hook-echo-two',{opacity:.2,visibility:'visible',y:0},{opacity:0,visibility:'hidden',y:105,duration:.5,ease:'power2.out',immediateRender:false},ECHO_BEAT);
+tl.fromTo('#hook-flash',{opacity:0,scale:.2},{opacity:1,scale:2.5,duration:.32,ease:'power2.inOut',immediateRender:false},FLASH_BEAT);
+tl.to('#hook-copy',{opacity:0,scale:1.08,duration:.31,ease:'power2.in'},FLASH_BEAT);
+window.__timelines=window.__timelines||{};
 window.__timelines.hook=tl;
 </script></template>

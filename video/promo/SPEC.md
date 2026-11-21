@@ -4,13 +4,13 @@
 
 - Canvas: 1080 × 1920, 30 fps, 900 frames.
 - Music: 86 BPM, beat = 60/86 = 0.697674 s. Boundaries are rounded beat times.
-- Audio: `assets/audio/music-30s.m4a`, 0–30 s, no voiceover or subtitles.
+- Audio: `assets/audio/music-30s-v2.m4a`, 0–30 s, with hook impact and whoosh; no voiceover or subtitles.
 - Action-safe: x 54–1026, y 96–1824. Title-safe: x 108–972, y 192–1728.
 - Phone: x 110–970, y 315–1595.
 
 | Scene | Beats | Seconds | Proof or action |
 | --- | ---: | ---: | --- |
-| Hook | 0–4 | 0–2.791 | Seeded gold particles, genuine logo mark, gold QUANTUM Psychology lockup. |
+| Hook | 0–4 | 0–2.791 | Full-frame purple image and «Нега ҳаётингизда» at frame 0; gold «бир хил муаммо» punches in at 0.698 s; «такрорланади?» rises at 1.395 s; faint echoes at 2.093 s; warm gold flash cuts to promise at 2.791 s. |
 | Promise | 4–10 | 2.791–6.977 | Two lines appear word by word at 0.6977 s spacing. |
 | Bot | 10–18 | 6.977–12.558 | Telegram mockup with actual welcome image and exact bot caption; reply key pulses and is tapped near 11.8 s. |
 | Mini app | 18–26 | 12.558–18.140 | Real hero screenshot rises, real long module screenshot scrolls past multiple cards. |
@@ -23,7 +23,7 @@
 - Gold gradient: #f5b52e → #ffe39a → #ffcf5a.
 - Text: #ffffff, secondary #e4d8ff.
 - Headings: local Cormorant Garamond 500–700 including italic; UI: local Montserrat 400–800. Cyrillic, Cyrillic-ext and Latin subsets use the same unicode ranges as `webapp/fonts.css`.
-- No random animation source: particles use a fixed seeded linear congruential generator (seed 47291).
+- Hook grain uses fixed SVG noise seed 47291; animation has no random source.
 
 ## Deliberate choices
 
