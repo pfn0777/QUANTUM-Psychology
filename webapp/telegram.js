@@ -1,12 +1,13 @@
 // telegram-web-app.js reports platform "unknown" when the page is opened outside Telegram.
 const OUTSIDE_TELEGRAM_PLATFORM = "unknown";
 
-// initData is intentionally not checked: Telegram leaves it empty for Mini Apps
-// launched from a reply-keyboard button, which is the only launch mode where sendData works.
+// Keyboard-button launches have empty initData. Inline/menu launches have full initData,
+// where sendData does not work.
 export function canSendToBot(webApp) {
   return Boolean(
     webApp &&
       typeof webApp.sendData === "function" &&
+      !webApp.initData &&
       webApp.platform &&
       webApp.platform !== OUTSIDE_TELEGRAM_PLATFORM,
   );

@@ -104,7 +104,7 @@ const SPEC_UI_CYR = {
   submit: "Аризани юбориш",
   successTitle: "Аризангиз қабул қилинди",
   successText: "Сизга танлаган вақтингизда боғланишга ҳаракат қиламиз.",
-  openFromBot: "Аризани юбориш учун ботдаги тугма орқали очинг",
+  openFromBot: "Аризани юбориш учун чатдаги пастки «Бепул суҳбатга ёзилиш» тугмасини босинг",
   disclaimer: "Дастур тиббий ёрдам ўрнини босмайди. Соғлиғингиз бўйича шифокорга мурожаат қилинг.",
 };
 const LATIN_SPOT_CHECKS = {
@@ -113,6 +113,7 @@ const LATIN_SPOT_CHECKS = {
   heroTagline: "Ichki imkoniyatingizni oching — yangi darajaga chiqing",
   consultationStep2: "Biz sizga qulay vaqtda qoʻngʻiroq qilamiz.",
   consentText: "Maʼlumotlarim ushbu ariza boʻyicha men bilan bogʻlanish uchun ishlatilishiga roziman",
+  openFromBot: "Arizani yuborish uchun chatdagi pastki «Bepul suhbatga yozilish» tugmasini bosing",
   disclaimer: "Dastur tibbiy yordam oʻrnini bosmaydi. Sogʻligʻingiz boʻyicha shifokorga murojaat qiling.",
 };
 
@@ -242,7 +243,7 @@ test("UI has equal scripts, required errors, fallback and no emoji", () => {
   assert.equal(t("heroCta", "unknown"), UI.cyr.heroCta);
   assert.equal(t("missing_key", "lat"), "missing_key");
   assert.equal(t("toString", "lat"), "toString");
-  assert.equal(UI.cyr.openFromBot, "Аризани юбориш учун ботдаги тугма орқали очинг");
+  assert.equal(UI.cyr.openFromBot, "Аризани юбориш учун чатдаги пастки «Бепул суҳбатга ёзилиш» тугмасини босинг");
   for (const value of stringsIn({ MODULES, INTRO, TWELVE_LINE, GOAL_TITLE, GOAL, AUDIENCE_TITLE,
     AUDIENCE, CLOSING, REGIONS, TOPICS, PRIOR, CALL_TIMES, SOURCES, UI })) {
     assert.equal(EMOJI.test(value), false, `Emoji found in ${value}`);
