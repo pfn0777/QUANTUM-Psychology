@@ -15,6 +15,9 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (
+    BotCommand,
+    BotCommandScopeChat,
+    BotCommandScopeDefault,
     BufferedInputFile,
     FSInputFile,
     InlineKeyboardButton,
@@ -51,6 +54,31 @@ class Settings:
     admin_chat_id: int
     webapp_url: str
     db_path: Path
+
+
+def user_commands() -> list[BotCommand]:
+    return [BotCommand(command="start", description=texts.t("cmd_start"))]
+
+
+def admin_commands() -> list[BotCommand]:
+    return [
+        BotCommand(command="start", description=texts.t("cmd_start")),
+        BotCommand(command="stats", description=texts.t("cmd_stats")),
+        BotCommand(command="export", description=texts.t("cmd_export")),
+    ]
+
+
+async def setup_commands(bot: Bot, settings: Settings) -> None:
+    try:
+        await bot.set_my_commands(user_commands(), scope=BotCommandScopeDefault())
+    except Exception as exc:
+        logger.error("Could not set bot commands: %s", type(exc).__name__)
+    try:
+        await bot.set_my_commands(
+            admin_commands(), scope=BotCommandScopeChat(chat_id=settings.admin_chat_id)
+        )
+    except Exception as exc:
+        logger.error("Could not set bot commands: %s", type(exc).__name__)
 
 
 def load_settings(env: dict[str, str] | None = None, dotenv_path: Path | None = None) -> Settings:
@@ -246,6 +274,7 @@ async def main() -> int:
     storage = Storage(settings.db_path)
     await storage.init()
     bot = Bot(settings.token)
+    await setup_commands(bot, settings)
     handlers = BotHandlers(settings, storage)
     dispatcher = build_dispatcher(handlers)
     retry_task = asyncio.create_task(handlers.retry_forever(bot))

@@ -59,6 +59,9 @@ EXPECTED_CODES = (
 )
 EXPECTED_COUNTS = (15, 8, 3, 3, 5)
 EXPECTED_TEXT_KEYS = {
+    "cmd_start",
+    "cmd_stats",
+    "cmd_export",
     "welcome_caption",
     "start_greeting",
     "more_info_text",

@@ -8,7 +8,14 @@ from types import SimpleNamespace
 
 import pytest
 from aiogram.enums import ParseMode
-from aiogram.types import BufferedInputFile, FSInputFile, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from aiogram.types import (
+    BotCommandScopeChat,
+    BotCommandScopeDefault,
+    BufferedInputFile,
+    FSInputFile,
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
+)
 
 import bot as bot_module
 from bot import BotHandlers, ConfigError, Settings, build_dispatcher, load_settings
@@ -70,6 +77,10 @@ class FakeBot:
     def __init__(self, fail=False):
         self.fail = fail
         self.sent = []
+        self.command_calls = []
+
+    async def set_my_commands(self, commands, *, scope):
+        self.command_calls.append((commands, scope))
 
     async def send_message(self, chat_id, text, **kwargs):
         if self.fail:
@@ -125,6 +136,40 @@ def test_main_reports_config_error_without_traceback(monkeypatch, capsys):
     output = capsys.readouterr()
     assert "BOT_TOKEN" in output.out
     assert output.err == ""
+
+
+@pytest.mark.asyncio
+async def test_setup_commands_registers_default_and_admin_scopes(tmp_path: Path):
+    bot = FakeBot()
+    settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_path / "unused.db")
+
+    await bot_module.setup_commands(bot, settings)
+
+    assert len(bot.command_calls) == 2
+    user_commands, default_scope = bot.command_calls[0]
+    admin_commands, chat_scope = bot.command_calls[1]
+    assert isinstance(default_scope, BotCommandScopeDefault)
+    assert [command.command for command in user_commands] == ["start"]
+    assert isinstance(chat_scope, BotCommandScopeChat)
+    assert chat_scope.chat_id == ADMIN_CHAT_ID
+    assert [command.command for command in admin_commands] == ["start", "stats", "export"]
+    assert all(command.description for command in user_commands + admin_commands)
+
+
+@pytest.mark.asyncio
+async def test_setup_commands_logs_errors_without_raising(tmp_path: Path, caplog):
+    class FailingCommandBot(FakeBot):
+        async def set_my_commands(self, commands, *, scope):
+            await super().set_my_commands(commands, scope=scope)
+            raise RuntimeError("Telegram unavailable")
+
+    bot = FailingCommandBot()
+    settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_path / "unused.db")
+
+    await bot_module.setup_commands(bot, settings)
+
+    assert len(bot.command_calls) == 2
+    assert caplog.text.count("Could not set bot commands: RuntimeError") == 2
 
 
 @pytest.mark.asyncio

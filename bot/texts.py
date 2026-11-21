@@ -2,6 +2,9 @@
 
 TEXTS: dict[str, dict[str, str]] = {
     "cyr": {
+        "cmd_start": "Ботни бошлаш",
+        "cmd_stats": "Статистика",
+        "cmd_export": "Аризаларни юклаб олиш (CSV)",
         "welcome_caption": "Ассалому алайкум! QUANTUM Psychology'га хуш келибсиз. 12 ойлик шахсий ва руҳий ривожланиш дастури. Бепул дастлабки суҳбатга ёзилиш учун қуйидаги тугмани босинг.",
         "start_greeting": "Ассалому алайкум! Бепул дастлабки суҳбат учун қуйидаги тугмани босинг.",
         "more_info_text": "Дастур ҳақида батафсил маълумот учун қуйидаги тугмани босинг.",
@@ -23,6 +26,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "err_consent": "Илтимос, маълумотларингизни ушбу ариза учун ишлатишга розилигингизни белгиланг.",
     },
     "lat": {
+        "cmd_start": "Botni boshlash",
+        "cmd_stats": "Statistika",
+        "cmd_export": "Arizalarni yuklab olish (CSV)",
         "welcome_caption": "Assalomu alaykum! QUANTUM Psychology'ga xush kelibsiz. 12 oylik shaxsiy va ruhiy rivojlanish dasturi. Bepul dastlabki suhbatga yozilish uchun quyidagi tugmani bosing.",
         "start_greeting": "Assalomu alaykum! Bepul dastlabki suhbat uchun quyidagi tugmani bosing.",
         "more_info_text": "Dastur haqida batafsil maʼlumot uchun quyidagi tugmani bosing.",
