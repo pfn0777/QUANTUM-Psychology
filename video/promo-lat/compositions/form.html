@@ -1,0 +1,25 @@
+<template><style>
+#root{position:absolute;inset:0;background:radial-gradient(circle at 50% 49%,#24095a,#160536 72%)}
+#form-phone{position:absolute;left:110px;top:315px;width:860px;height:1280px;border:16px solid #9b5cff;border-radius:76px;background:#160536;overflow:hidden;box-shadow:0 0 95px #7b2cf0}
+#form-screen{position:absolute;inset:10px;border-radius:51px;overflow:hidden;background:#24095a}
+#form-top,#form-bottom,#form-success{position:absolute;left:0;top:0;width:100%;height:auto}
+#form-bottom,#form-success{opacity:0}
+#form-check{position:absolute;left:350px;top:310px;width:108px;height:108px;border:7px solid #ffcf5a;border-radius:50%;color:#ffe39a;font:700 76px/94px 'Montserrat';text-align:center;text-shadow:0 0 24px #ffcf5a;box-shadow:0 0 35px #ffcf5a;opacity:0}
+#form-tap{position:absolute;left:590px;top:1030px;width:70px;height:70px;border:6px solid #fff;border-radius:50%;opacity:0;box-shadow:0 0 35px #ffe39a}
+#form-caption{position:absolute;left:108px;top:1620px;width:864px;text-align:center;font:700 45px 'Cormorant Garamond';color:#ffe39a}
+</style><div id="root" data-composition-id="form" data-width="1080" data-height="1920">
+<div id="form-stage" class="clip" data-start="0" data-duration="5.581">
+<div id="form-phone"><div id="form-screen">
+<img id="form-top" src="assets/screens-lat/03a-form-top.png" alt=""><img id="form-bottom" src="assets/screens-lat/03-form.png" alt=""><img id="form-success" src="assets/screens-lat/04-success.png" alt="">
+<div id="form-tap"></div><div id="form-check">✓</div>
+</div></div><div id="form-caption">Ariza — 1 daqiqada</div>
+</div></div><script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo('#form-phone',{opacity:0,scale:1.06},{opacity:1,scale:1,duration:.4,ease:'power4.out'},0);
+tl.fromTo('#form-bottom',{opacity:0,y:0},{opacity:1,y:-360,duration:1.25,ease:'power2.inOut'},1.15);
+tl.to('#form-top',{opacity:0,duration:.35},1.5);
+tl.fromTo('#form-tap',{opacity:0,scale:.4},{opacity:1,scale:1,duration:.2},3.0).to('#form-tap',{opacity:0,scale:1.4,duration:.3},3.2);
+tl.fromTo('#form-success',{opacity:0,y:1100},{opacity:1,y:0,duration:.65,ease:'power4.out'},3.5);
+tl.fromTo('#form-check',{opacity:0,scale:.5},{opacity:1,scale:1,duration:.45,ease:'back.out(1.4)'},4.1);
+tl.to('#form-stage',{opacity:0,duration:.25},5.29);window.__timelines.form=tl;
+</script></template>
