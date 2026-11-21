@@ -17,8 +17,6 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import (
     BufferedInputFile,
     FSInputFile,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
     KeyboardButton,
     Message,
     ReplyKeyboardMarkup,
@@ -103,14 +101,6 @@ def keyboard(settings: Settings, source: str | None = None) -> ReplyKeyboardMark
     )
 
 
-def inline_keyboard(settings: Settings, source: str | None = None) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text=texts.t("open_button"), web_app=WebAppInfo(url=webapp_url(settings, source)))]
-        ]
-    )
-
-
 class BotHandlers:
     """Handler logic with injected storage and a testable bot transport."""
 
@@ -128,7 +118,6 @@ class BotHandlers:
             await message.answer_photo(
                 FSInputFile(WELCOME_PHOTO),
                 caption=texts.t("welcome_caption"),
-                reply_markup=inline_keyboard(self.settings, source),
             )
         except Exception as exc:
             logger.error("Could not send welcome photo: %s", type(exc).__name__)

@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 from aiogram.enums import ParseMode
-from aiogram.types import BufferedInputFile, FSInputFile, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from aiogram.types import BufferedInputFile, FSInputFile, ReplyKeyboardMarkup
 
 import bot as bot_module
 from bot import BotHandlers, ConfigError, Settings, build_dispatcher, load_settings
@@ -139,11 +139,7 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     assert isinstance(photo, FSInputFile)
     assert photo.path == bot_module.WELCOME_PHOTO
     assert photo_kwargs["caption"] == t("welcome_caption")
-    inline_markup = photo_kwargs["reply_markup"]
-    assert isinstance(inline_markup, InlineKeyboardMarkup)
-    inline_button = inline_markup.inline_keyboard[0][0]
-    assert inline_button.text == t("open_button")
-    assert inline_button.web_app.url == WEBAPP_URL + "?a=1&src=ig"
+    assert "reply_markup" not in photo_kwargs
     text, kwargs = source_message.answers[0]
     assert text == t("start_greeting")
     assert isinstance(kwargs["reply_markup"], ReplyKeyboardMarkup)
