@@ -62,7 +62,7 @@ const EXPECTED_CATALOG = [
 ];
 const REQUIRED_UI_KEYS = [
   "toggleCyr", "toggleLat", "heroEyebrow", "heroTitle", "heroSubtitle",
-  "heroTagline", "heroTag", "heroTagText", "heroCta", "aboutTitle",
+  "heroTagline", "heroTag", "heroTagText", "heroCta", "heroImageAlt", "aboutTitle",
   "modulesTitle", "goalTitle", "audienceTitle", "founderTitle",
   "founderP1", "founderP2", "founderP3", "consultationTitle",
   "consultationStep1", "consultationStep2", "consultationStep3", "formTitle",
@@ -85,6 +85,7 @@ const SPEC_UI_CYR = {
   toggleLat: "Lot",
   heroEyebrow: "12 ОЙЛИК ДАСТУР",
   heroTitle: "QUANTUM Psychology",
+  heroImageAlt: "QUANTUM Psychology — 12 ойлик шахсий ва руҳий ривожланиш дастури. Фикр кучини бошқариш, ички мувозанат ва хотиржамлик, ҳаёт сифатини юксалтириш. Бепул дастлабки суҳбат.",
   heroSubtitle: "12 ойлик шахсий ва руҳий ривожланиш дастури",
   heroTagline: "Ички имкониятингизни очинг — янги даражага чиқинг",
   heroTag: "БЕПУЛ",
@@ -108,6 +109,7 @@ const SPEC_UI_CYR = {
   disclaimer: "Дастур тиббий ёрдам ўрнини босмайди. Соғлиғингиз бўйича шифокорга мурожаат қилинг.",
 };
 const LATIN_SPOT_CHECKS = {
+  heroImageAlt: "QUANTUM Psychology — 12 oylik shaxsiy va ruhiy rivojlanish dasturi. Fikr kuchini boshqarish, ichki muvozanat va xotirjamlik, hayot sifatini yuksaltirish. Bepul dastlabki suhbat.",
   heroEyebrow: "12 OYLIK DASTUR",
   heroSubtitle: "12 oylik shaxsiy va ruhiy rivojlanish dasturi",
   heroTagline: "Ichki imkoniyatingizni oching — yangi darajaga chiqing",

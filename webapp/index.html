@@ -26,14 +26,11 @@
 
     <main>
       <section class="hero" aria-labelledby="heroTitle">
-        <div class="hero__orbit" aria-hidden="true"></div>
-        <img class="hero__mark" src="assets/logo-mark.svg" alt="">
-        <p class="eyebrow" data-i18n="heroEyebrow"></p>
-        <h1 id="heroTitle" data-i18n="heroTitle"></h1>
-        <p class="hero__subtitle" data-i18n="heroSubtitle"></p>
-        <p class="hero__tagline" data-i18n="heroTagline"></p>
-        <div class="hero__offer"><strong data-i18n="heroTag"></strong><span data-i18n="heroTagText"></span></div>
-        <a class="button button--gold" href="#leadForm" data-i18n="heroCta"></a>
+        <h1 id="heroTitle" class="visually-hidden" data-i18n="heroTitle"></h1>
+        <div class="hero__banner">
+          <div class="hero__image" role="img" data-i18n-aria-label="heroImageAlt"><img src="assets/hero-banner.webp" width="1314" height="1197" alt="" decoding="async" fetchpriority="high"></div>
+          <a class="hero__cta" href="#leadForm" data-i18n-aria-label="heroCta"></a>
+        </div>
       </section>
 
       <section class="section section--about" aria-labelledby="aboutTitle">
