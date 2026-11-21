@@ -4,6 +4,7 @@ import {
 } from "./data.js";
 import { t } from "./i18n.js";
 import { payloadBytes, validateLead } from "./validate.js";
+import { canSendToBot } from "./telegram.js";
 
 const STORAGE_KEY = "qp_script";
 const DEFAULT_SCRIPT = "cyr";
@@ -15,7 +16,7 @@ const NATIONAL_PHONE_DIGITS = PHONE_GROUPS.reduce((sum, count) => sum + count, 0
 const MODULE_NUMBER_WIDTH = 2;
 const SUBMIT_FALLBACK_MS = 900;
 const tg = window.Telegram?.WebApp;
-const inTelegram = Boolean(tg?.initData && typeof tg.sendData === "function");
+const inTelegram = canSendToBot(tg);
 const querySource = new URLSearchParams(window.location.search).get("src");
 const deepLinkSource = DEEP_LINK_SOURCES.includes(querySource) ? querySource : null;
 
