@@ -21,6 +21,13 @@ Qabul mezonlari: vercel.json valid JSON, framework/buildCommand/installCommand =
 ## Qarorlar
 - Vercel MCP loyihani ko'rmadi; dashboard preset tekshirilmadi. vercel.json framework override ishlatiladi.
 
+## Tahlil 2 (2026-11-21, push'dan keyin)
+- 7c5a0d9 deploy: Ready, lekin sayt 404. Build log: "Build output contains no functions/static/services". Output: faqat middleware.
+- Sabab: dashboard'da Framework Preset = Python. vercel.json dagi `"framework": null` Vercel CLI 66 da "o'rnatilmagan" deb o'qiladi va dashboard preset'i (Python) ishlaydi; Python preset outputDirectory'ni e'tiborsiz qoldiradi. Bot fayllari .vercelignore bilan chiqarilgani uchun endi yiqilmaydi, lekin bo'sh chiqadi.
+- Yechim: dashboard → Framework Preset = Other (foydalanuvchi qiladi). Kod o'zgarishi kerak emas.
+
 ## Foydalanuvchi vazifalari
+- [x] Framework Preset: Python → Other (mentor Chrome orqali, foydalanuvchi ruxsati bilan, saqlandi)
+- [ ] Oxirgi deploy'ni (7c5a0d9) Redeploy qilish va saytni tekshirish
 - [ ] git push → Vercel build logini tekshirish
 - [ ] Baribir yiqilsa: Settings → Build and Deployment → Framework Preset → Other
