@@ -17,6 +17,8 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import (
     BufferedInputFile,
     FSInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
     KeyboardButton,
     Message,
     ReplyKeyboardMarkup,
@@ -34,6 +36,7 @@ from storage import Storage
 logger = logging.getLogger(__name__)
 BOT_DIR = Path(__file__).resolve().parent
 WELCOME_PHOTO = BOT_DIR / "assets" / "welcome.png"
+MORE_INFO_URL = "https://birjoyda.vercel.app/quantum-psychology"
 DEFAULT_DB_PATH = BOT_DIR / "data" / "leads.db"
 STATS_DAYS = max(stats.PERIOD_DAYS)
 
@@ -101,6 +104,12 @@ def keyboard(settings: Settings, source: str | None = None) -> ReplyKeyboardMark
     )
 
 
+def more_info_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[[InlineKeyboardButton(text=texts.t("more_info_button"), url=MORE_INFO_URL)]],
+    )
+
+
 class BotHandlers:
     """Handler logic with injected storage and a testable bot transport."""
 
@@ -122,6 +131,7 @@ class BotHandlers:
         except Exception as exc:
             logger.error("Could not send welcome photo: %s", type(exc).__name__)
         await message.answer(texts.t("start_greeting"), reply_markup=keyboard(self.settings, source))
+        await message.answer(texts.t("more_info_text"), reply_markup=more_info_keyboard())
 
     async def web_app_data(self, message: Message, bot: Bot) -> None:
         user = message.from_user

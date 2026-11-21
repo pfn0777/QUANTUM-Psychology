@@ -4,6 +4,8 @@ TEXTS: dict[str, dict[str, str]] = {
     "cyr": {
         "welcome_caption": "Ассалому алайкум! QUANTUM Psychology'га хуш келибсиз. 12 ойлик шахсий ва руҳий ривожланиш дастури. Бепул дастлабки суҳбатга ёзилиш учун қуйидаги тугмани босинг.",
         "start_greeting": "Ассалому алайкум! Бепул дастлабки суҳбат учун қуйидаги тугмани босинг.",
+        "more_info_text": "Дастур ҳақида батафсил маълумот учун қуйидаги тугмани босинг.",
+        "more_info_button": "Қўшимча маълумотлар",
         "open_button": "Бепул суҳбатга ёзилиш",
         "thanks": "Аризангизни олдик. Сиз танлаган вақтда қўнғироқ қиламиз.",
         "cooldown": "Аризангиз яқинда қабул қилинди. Илтимос, бироздан кейин қайта уриниб кўринг.",
@@ -23,6 +25,8 @@ TEXTS: dict[str, dict[str, str]] = {
     "lat": {
         "welcome_caption": "Assalomu alaykum! QUANTUM Psychology'ga xush kelibsiz. 12 oylik shaxsiy va ruhiy rivojlanish dasturi. Bepul dastlabki suhbatga yozilish uchun quyidagi tugmani bosing.",
         "start_greeting": "Assalomu alaykum! Bepul dastlabki suhbat uchun quyidagi tugmani bosing.",
+        "more_info_text": "Dastur haqida batafsil maʼlumot uchun quyidagi tugmani bosing.",
+        "more_info_button": "Qoʻshimcha maʼlumotlar",
         "open_button": "Bepul suhbatga yozilish",
         "thanks": "Arizangizni oldik. Siz tanlagan vaqtda qoʻngʻiroq qilamiz.",
         "cooldown": "Arizangiz yaqinda qabul qilindi. Iltimos, birozdan keyin qayta urinib koʻring.",

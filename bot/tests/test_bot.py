@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 from aiogram.enums import ParseMode
-from aiogram.types import BufferedInputFile, FSInputFile, ReplyKeyboardMarkup
+from aiogram.types import BufferedInputFile, FSInputFile, InlineKeyboardMarkup, ReplyKeyboardMarkup
 
 import bot as bot_module
 from bot import BotHandlers, ConfigError, Settings, build_dispatcher, load_settings
@@ -133,7 +133,7 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     handlers.settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL + "?a=1", handlers.settings.db_path)
     source_message = FakeMessage(fake_user_factory(), text="/start ig")
     await handlers.start(source_message)
-    assert source_message.calls == ["photo", "answer"]
+    assert source_message.calls == ["photo", "answer", "answer"]
     assert len(source_message.photos) == 1
     photo, photo_kwargs = source_message.photos[0]
     assert isinstance(photo, FSInputFile)
@@ -146,6 +146,12 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     button = kwargs["reply_markup"].keyboard[0][0]
     assert button.text == t("open_button")
     assert button.web_app.url == WEBAPP_URL + "?a=1&src=ig"
+    info_text, info_kwargs = source_message.answers[1]
+    assert info_text == t("more_info_text")
+    assert isinstance(info_kwargs["reply_markup"], InlineKeyboardMarkup)
+    info_button = info_kwargs["reply_markup"].inline_keyboard[0][0]
+    assert info_button.text == t("more_info_button")
+    assert info_button.url == "https://birjoyda.vercel.app/quantum-psychology"
     unknown_message = FakeMessage(fake_user_factory(), text="/start unknown")
     await handlers.start(unknown_message)
     assert unknown_message.answers[0][1]["reply_markup"].keyboard[0][0].web_app.url == WEBAPP_URL + "?a=1"
@@ -168,6 +174,12 @@ async def test_start_photo_error_still_sends_greeting(configured, fake_user_fact
     assert message.answers[0][0] == t("start_greeting")
     assert isinstance(message.answers[0][1]["reply_markup"], ReplyKeyboardMarkup)
     assert message.answers[0][1]["reply_markup"].keyboard[0][0].web_app.url == WEBAPP_URL + "?src=ig"
+    info_text, info_kwargs = message.answers[1]
+    assert info_text == t("more_info_text")
+    assert isinstance(info_kwargs["reply_markup"], InlineKeyboardMarkup)
+    info_button = info_kwargs["reply_markup"].inline_keyboard[0][0]
+    assert info_button.text == t("more_info_button")
+    assert info_button.url == "https://birjoyda.vercel.app/quantum-psychology"
     assert "Could not send welcome photo: RuntimeError" in caplog.text
 
 

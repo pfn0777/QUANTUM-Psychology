@@ -61,6 +61,8 @@ EXPECTED_COUNTS = (15, 8, 3, 3, 5)
 EXPECTED_TEXT_KEYS = {
     "welcome_caption",
     "start_greeting",
+    "more_info_text",
+    "more_info_button",
     "open_button",
     "thanks",
     "cooldown",
