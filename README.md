@@ -58,13 +58,13 @@ Botning uzoq so'rovli (`long polling`) jarayoni Vercel'da emas, doimiy ishlaydig
 Serverda Python 3.11, `venv` va Git bo'lsin. Repozitoriyni `/opt/quantum-bot` manziliga joylang. Quyidagi buyruqlar server terminalida bajariladi; `<repo-url>` o'rniga o'z repozitoriy manzilingizni kiriting:
 
 ```bash
-sudo useradd --system --home-dir /opt/quantum-bot --no-create-home --shell /usr/sbin/nologin quantum
+sudo useradd --system --home-dir /opt/quantum-bot --no-create-home --shell /usr/sbin/nologin quantum-bot
 sudo git clone <repo-url> /opt/quantum-bot
 cd /opt/quantum-bot
 sudo python3.11 -m venv .venv
 sudo .venv/bin/python -m pip install -r bot/requirements.txt
-sudo install -d -o quantum -g quantum -m 750 bot/data
-sudo install -o root -g quantum -m 640 bot/.env.example bot/.env
+sudo install -d -o quantum-bot -g quantum-bot -m 750 bot/data
+sudo install -o root -g quantum-bot -m 640 bot/.env.example bot/.env
 sudoedit bot/.env
 ```
 
@@ -77,7 +77,7 @@ sudo systemctl enable --now quantum-bot.service
 sudo systemctl status quantum-bot.service
 ```
 
-Bot `bot/.env` faylini o'zi o'qiydi. systemd unit ichida `EnvironmentFile` ishlatilmaydi. Xizmat `quantum` nomli oddiy foydalanuvchi bilan yuradi va faqat `bot/data/` papkasiga yozadi. Xatoni ko'rish uchun `sudo journalctl -u quantum-bot.service -n 100` buyrug'idan foydalaning; loglarni ulashishdan oldin shaxsiy ma'lumot yo'qligini tekshiring.
+Bot `bot/.env` faylini o'zi o'qiydi. systemd unit ichida `EnvironmentFile` ishlatilmaydi. Xizmat `quantum-bot` nomli oddiy foydalanuvchi bilan yuradi va faqat `bot/data/` papkasiga yozadi. Xatoni ko'rish uchun `sudo journalctl -u quantum-bot.service -n 100` buyrug'idan foydalaning; loglarni ulashishdan oldin shaxsiy ma'lumot yo'qligini tekshiring.
 
 ## Havolalar va foydalanish
 
