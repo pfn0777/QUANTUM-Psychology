@@ -1,17 +1,21 @@
-"""Async SQLite storage for consultation leads."""
+"""Async SQLite storage for consultation leads and Telegram users."""
 
 import asyncio
 import csv
 import io
 import json
+import logging
 from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
+from unicodedata import category
 
 import aiosqlite
 
 from leads import UZ_FULL_DIGITS, UZBEKISTAN_PHONE_PREFIX
 
+
+logger = logging.getLogger(__name__)
 
 CSV_COLUMNS = (
     "id",
@@ -30,6 +34,14 @@ CSV_COLUMNS = (
     "comment",
     "script",
     "delivered",
+)
+USER_CSV_COLUMNS = (
+    "tg_user_id",
+    "tg_username",
+    "tg_full_name",
+    "source",
+    "first_seen_at",
+    "last_seen_at",
 )
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
 PHONE_COLUMN = "phone"
@@ -58,8 +70,24 @@ def format_uz_phone(value: str) -> str | None:
     return UZ_PHONE_EXPORT_SEPARATOR.join(groups)
 
 
+def _guard_csv_formula(cell: str) -> str:
+    if cell.startswith(CSV_FORMULA_PREFIXES):
+        return "'" + cell
+    return cell
+
+
+def _guard_users_csv_formula(cell: str) -> str:
+    # Check the first visible character while preserving the original cell text.
+    for index, char in enumerate(cell):
+        if not (char.isspace() or category(char) in ("Cc", "Cf")):
+            if cell.startswith(CSV_FORMULA_PREFIXES, index):
+                return "'" + cell
+            break
+    return _guard_csv_formula(cell)
+
+
 class Storage:
-    """Store leads; returned rows contain a topics list and delivered as int 0 or 1."""
+    """Store Telegram users and leads with decoded topics."""
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
@@ -71,8 +99,11 @@ class Storage:
         if self._db is not None:
             return
         await asyncio.to_thread(self.path.parent.mkdir, parents=True, exist_ok=True)
-        db = await aiosqlite.connect(self.path)
+        # Let SQLite finish opening so cancellation cannot orphan its connection.
+        opening = asyncio.ensure_future(aiosqlite.connect(self.path))
+        db = None
         try:
+            db = await asyncio.shield(opening)
             db.row_factory = aiosqlite.Row
             await db.execute(
                 """CREATE TABLE IF NOT EXISTS leads (
@@ -100,11 +131,75 @@ class Storage:
             await db.execute(
                 "CREATE INDEX IF NOT EXISTS idx_leads_delivered ON leads (delivered)"
             )
+            await db.execute("BEGIN")
+            await db.execute(
+                """CREATE TABLE IF NOT EXISTS users (
+                    tg_user_id INTEGER PRIMARY KEY,
+                    tg_username TEXT,
+                    tg_full_name TEXT NOT NULL,
+                    source TEXT,
+                    first_seen_at TEXT NOT NULL,
+                    last_seen_at TEXT NOT NULL
+                )"""
+            )
+            await db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_users_first_seen_at ON users (first_seen_at)"
+            )
+            await db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_users_last_seen_at ON users (last_seen_at)"
+            )
+            await db.execute(
+                """INSERT OR IGNORE INTO users (
+                    tg_user_id, tg_username, tg_full_name, source, first_seen_at, last_seen_at
+                )
+                SELECT latest.tg_user_id, latest.tg_username, latest.tg_full_name,
+                       NULL, history.first_seen_at, history.last_seen_at
+                FROM (
+                    SELECT MAX(id) AS latest_id,
+                           MIN(created_at) AS first_seen_at,
+                           MAX(created_at) AS last_seen_at
+                    FROM leads
+                    WHERE typeof(tg_user_id) = 'integer'
+                    GROUP BY tg_user_id
+                ) AS history
+                JOIN leads AS latest ON latest.id = history.latest_id"""
+            )
+            async with db.execute(
+                "SELECT COUNT(*) FROM leads WHERE typeof(tg_user_id) <> 'integer'"
+            ) as cursor:
+                row = await cursor.fetchone()
+                assert row is not None
+                skipped_rows = row[0]
             await db.commit()
-        except Exception:
-            await db.close()
+            if skipped_rows:
+                logger.warning(
+                    "Skipped %d lead rows with invalid Telegram user IDs during backfill",
+                    skipped_rows,
+                )
+        except BaseException as error:
+            if db is not None or isinstance(error, asyncio.CancelledError):
+                cleanup = asyncio.create_task(self._rollback_and_close_after_open(opening))
+                try:
+                    while not cleanup.done():
+                        try:
+                            await asyncio.shield(cleanup)
+                        except asyncio.CancelledError:
+                            logger.debug("Cancellation received while cleaning up SQLite initialization")
+                    cleanup.result()
+                except (asyncio.CancelledError, Exception):
+                    logger.exception("Failed to clean up SQLite after initialization failed")
             raise
         self._db = db
+
+    @staticmethod
+    async def _rollback_and_close_after_open(
+        opening: asyncio.Future[aiosqlite.Connection],
+    ) -> None:
+        db = await opening
+        try:
+            await db.rollback()
+        finally:
+            await db.close()
 
     def _connection(self) -> aiosqlite.Connection:
         if self._db is None:
@@ -180,12 +275,80 @@ class Storage:
                 await db.rollback()
                 raise
 
+    async def upsert_user(
+        self,
+        tg_user_id: int,
+        tg_username: str | None,
+        tg_full_name: str,
+        source: str | None,
+        seen_at: datetime,
+    ) -> None:
+        if not isinstance(tg_user_id, int) or isinstance(tg_user_id, bool):
+            raise ValueError("tg_user_id must be an int other than bool")
+        db = self._connection()
+        seen_at_iso = self._utc_iso(seen_at)
+        async with self._write_lock:
+            try:
+                async with db.execute(
+                    """INSERT INTO users (
+                        tg_user_id, tg_username, tg_full_name, source, first_seen_at, last_seen_at
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(tg_user_id) DO UPDATE SET
+                        tg_username = excluded.tg_username,
+                        tg_full_name = excluded.tg_full_name,
+                        source = COALESCE(users.source, excluded.source),
+                        last_seen_at = excluded.last_seen_at""",
+                    (tg_user_id, tg_username, tg_full_name, source, seen_at_iso, seen_at_iso),
+                ):
+                    pass
+                await db.commit()
+            except BaseException:
+                await db.rollback()
+                raise
+
     async def _fetch_rows(self, query: str, parameters: tuple = ()) -> list[dict]:
         db = self._connection()
         async with self._write_lock:
             async with db.execute(query, parameters) as cursor:
                 rows = await cursor.fetchall()
         return [self._decode_row(row) for row in rows]
+
+    async def _fetch_user_rows(self, query: str, parameters: tuple = ()) -> list[dict]:
+        db = self._connection()
+        async with self._write_lock:
+            async with db.execute(query, parameters) as cursor:
+                rows = await cursor.fetchall()
+        return [dict(row) for row in rows]
+
+    async def _fetch_count(self, query: str, parameters: tuple = ()) -> int:
+        db = self._connection()
+        async with self._write_lock:
+            async with db.execute(query, parameters) as cursor:
+                row = await cursor.fetchone()
+        assert row is not None
+        return row[0]
+
+    async def count_users(self) -> int:
+        return await self._fetch_count("SELECT COUNT(*) FROM users")
+
+    async def count_lead_users(self) -> int:
+        return await self._fetch_count(
+            "SELECT COUNT(DISTINCT tg_user_id) FROM leads WHERE typeof(tg_user_id) = 'integer'"
+        )
+
+    async def count_undelivered(self) -> int:
+        return await self._fetch_count(
+            "SELECT COUNT(*) FROM leads WHERE delivered = ?", (UNDELIVERED,)
+        )
+
+    async def user_rows_since(self, since: datetime) -> list[dict]:
+        since_iso = self._utc_iso(since)
+        return await self._fetch_user_rows(
+            """SELECT * FROM users
+               WHERE first_seen_at >= ? OR last_seen_at >= ?
+               ORDER BY first_seen_at, tg_user_id""",
+            (since_iso, since_iso),
+        )
 
     async def undelivered(self, limit: int = DEFAULT_UNDELIVERED_LIMIT) -> list[dict]:
         return await self._fetch_rows(
@@ -228,9 +391,23 @@ class Storage:
                 )
                 if formatted_phone is not None:
                     cell = formatted_phone
-                elif cell.startswith(CSV_FORMULA_PREFIXES):
-                    cell = "'" + cell
+                else:
+                    cell = _guard_csv_formula(cell)
                 cells.append(cell)
+            writer.writerow(cells)
+        return output.getvalue().encode("utf-8-sig")
+
+    async def export_users_csv(self) -> bytes:
+        """Export users as comma CSV with a BOM and formula-safe cells."""
+        rows = await self._fetch_user_rows("SELECT * FROM users ORDER BY first_seen_at, tg_user_id")
+        output = io.StringIO(newline="")
+        writer = csv.writer(output)
+        writer.writerow(USER_CSV_COLUMNS)
+        for row in rows:
+            cells = []
+            for column in USER_CSV_COLUMNS:
+                value = row[column]
+                cells.append(_guard_users_csv_formula("" if value is None else str(value)))
             writer.writerow(cells)
         return output.getvalue().encode("utf-8-sig")
 
