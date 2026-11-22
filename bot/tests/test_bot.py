@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +19,7 @@ from aiogram.types import (
 )
 
 import bot as bot_module
+import leads
 from bot import BotHandlers, ConfigError, Settings, build_dispatcher, load_settings
 from storage import Storage
 from texts import t
@@ -429,3 +431,62 @@ async def test_save_error_does_not_start_cooldown(configured, fake_user_factory,
     accepted = FakeMessage(user, data=payload())
     await handlers.web_app_data(accepted, FakeBot())
     assert accepted.answers[0][0] == t("thanks", "lat")
+
+
+CREATED_AT_UTC = datetime(2026, 1, 1, 5, 0, tzinfo=timezone.utc)
+CREATED_AT_TASHKENT_TEXT = "01.01.2026 10:00"
+
+
+def make_row(user) -> dict:
+    result = leads.parse_payload(payload())
+    row = leads.lead_to_row(result, user)
+    row["created_at"] = CREATED_AT_UTC
+    return row
+
+
+@pytest.mark.asyncio
+async def test_admin_message_shows_created_at_for_new_lead(configured, fake_user_factory):
+    handlers, storage = configured
+    row = make_row(fake_user_factory())
+    row["id"] = await storage.save(row)
+    bot = FakeBot()
+    await handlers._deliver(row, bot)
+    assert CREATED_AT_TASHKENT_TEXT in bot.sent[0][1]
+
+
+@pytest.mark.asyncio
+async def test_admin_message_shows_created_at_on_retry(configured, fake_user_factory):
+    handlers, storage = configured
+    row = make_row(fake_user_factory())
+    row["id"] = await storage.save(row)
+    await handlers._deliver(row, FakeBot(fail=True))
+    bot = FakeBot()
+    await handlers.retry_undelivered_once(bot)
+    assert len(bot.sent) == 1
+    assert CREATED_AT_TASHKENT_TEXT in bot.sent[0][1]
+
+
+@pytest.mark.asyncio
+async def test_main_polling_keeps_pending_updates(monkeypatch, tmp_db_path):
+    captured = {}
+
+    async def fake_start_polling(self, *args, **kwargs):
+        captured.update(kwargs)
+
+    async def fake_setup_commands(bot, settings):
+        return None
+
+    settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_db_path)
+    monkeypatch.setattr(bot_module, "load_settings", lambda: settings)
+    fake_bot = FakeBot()
+
+    async def close_session():
+        return None
+
+    fake_bot.session = SimpleNamespace(close=close_session)
+    monkeypatch.setattr(bot_module, "Bot", lambda token: fake_bot)
+    monkeypatch.setattr(bot_module, "setup_commands", fake_setup_commands)
+    monkeypatch.setattr(bot_module.Dispatcher, "start_polling", fake_start_polling)
+    await bot_module.main()
+    assert "drop_pending_updates" not in captured
+    assert "allowed_updates" in captured

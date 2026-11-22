@@ -201,7 +201,7 @@ class BotHandlers:
             try:
                 await bot.send_message(
                     self.settings.admin_chat_id,
-                    leads.render_admin(row, datetime.now(timezone.utc)),
+                    leads.render_admin(row, _created_at(row)),
                     parse_mode=ParseMode.HTML,
                 )
             except Exception as exc:
@@ -255,6 +255,13 @@ class BotHandlers:
         await message.answer(texts.t("fallback_hint"), reply_markup=keyboard(self.settings))
 
 
+def _created_at(row: dict) -> datetime:
+    value = row["created_at"]
+    if isinstance(value, str):
+        return datetime.fromisoformat(value)
+    return value
+
+
 def build_dispatcher(handlers: BotHandlers) -> Dispatcher:
     dispatcher = Dispatcher()
     dispatcher.message.register(handlers.start, CommandStart())
@@ -282,7 +289,6 @@ async def main() -> int:
     try:
         await dispatcher.start_polling(
             bot,
-            drop_pending_updates=True,
             allowed_updates=dispatcher.resolve_used_update_types(),
         )
     finally:
