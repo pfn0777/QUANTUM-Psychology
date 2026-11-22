@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 from admin_panel import (
     ACTIVE_DAYS,
@@ -199,6 +199,25 @@ def test_panel_keyboard_layout_and_callbacks() -> None:
         for button in row:
             assert button.callback_data.startswith(CALLBACK_PREFIX)
             assert len(button.callback_data.encode("utf-8")) <= 64
+
+
+def test_panel_keyboard_without_url_preserves_default_layout() -> None:
+    default_keyboard = panel_keyboard()
+
+    assert panel_keyboard(None) == default_keyboard
+    assert panel_keyboard("") == default_keyboard
+    assert all(button.web_app is None for row in default_keyboard.inline_keyboard for button in row)
+
+
+def test_panel_keyboard_with_url_adds_web_app_first() -> None:
+    panel_url = "https://example.com/admin"
+
+    first_row, *remaining_rows = panel_keyboard(panel_url).inline_keyboard
+
+    assert first_row == [
+        InlineKeyboardButton(text="Визуал статистика", web_app=WebAppInfo(url=panel_url))
+    ]
+    assert remaining_rows == panel_keyboard().inline_keyboard
 
 
 def test_back_keyboard_returns_to_overview() -> None:

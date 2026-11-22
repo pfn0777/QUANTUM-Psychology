@@ -4,7 +4,7 @@ import html
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 import catalog
 
@@ -16,6 +16,7 @@ CB_LEADS = f"{CALLBACK_PREFIX}leads"
 CB_DAILY = f"{CALLBACK_PREFIX}daily"
 CB_CSV_LEADS = f"{CALLBACK_PREFIX}csv_leads"
 CB_CSV_USERS = f"{CALLBACK_PREFIX}csv_users"
+PANEL_BUTTON_TEXT = "Визуал статистика"
 
 TASHKENT_TZ = timezone(timedelta(hours=5))
 ACTIVE_DAYS = 7
@@ -26,21 +27,22 @@ LOOKBACK_DAYS = max(ACTIVE_DAYS, DAILY_DAYS, SOURCE_DAYS, *NEW_USER_PERIODS)
 _PERCENT_SCALE = 100
 
 
-def panel_keyboard() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="Фойдаланувчилар", callback_data=CB_USERS),
-                InlineKeyboardButton(text="Аризалар", callback_data=CB_LEADS),
-            ],
-            [InlineKeyboardButton(text=f"{DAILY_DAYS} кунлик динамика", callback_data=CB_DAILY)],
-            [
-                InlineKeyboardButton(text="Аризалар CSV", callback_data=CB_CSV_LEADS),
-                InlineKeyboardButton(text="Фойдаланувчилар CSV", callback_data=CB_CSV_USERS),
-            ],
-            [InlineKeyboardButton(text="Янгилаш", callback_data=CB_OVERVIEW)],
-        ]
-    )
+def panel_keyboard(panel_url: str | None = None) -> InlineKeyboardMarkup:
+    rows = [
+        [
+            InlineKeyboardButton(text="Фойдаланувчилар", callback_data=CB_USERS),
+            InlineKeyboardButton(text="Аризалар", callback_data=CB_LEADS),
+        ],
+        [InlineKeyboardButton(text=f"{DAILY_DAYS} кунлик динамика", callback_data=CB_DAILY)],
+        [
+            InlineKeyboardButton(text="Аризалар CSV", callback_data=CB_CSV_LEADS),
+            InlineKeyboardButton(text="Фойдаланувчилар CSV", callback_data=CB_CSV_USERS),
+        ],
+        [InlineKeyboardButton(text="Янгилаш", callback_data=CB_OVERVIEW)],
+    ]
+    if panel_url:
+        rows.insert(0, [InlineKeyboardButton(text=PANEL_BUTTON_TEXT, web_app=WebAppInfo(url=panel_url))])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def back_keyboard() -> InlineKeyboardMarkup:
