@@ -59,6 +59,7 @@ EXPECTED_CODES = (
 )
 EXPECTED_COUNTS = (15, 8, 3, 3, 5)
 EXPECTED_TEXT_KEYS = {
+    "cmd_admin",
     "cmd_start",
     "cmd_stats",
     "cmd_export",
@@ -69,6 +70,7 @@ EXPECTED_TEXT_KEYS = {
     "thanks",
     "cooldown",
     "server_error",
+    "admin_read_error",
     "fallback_hint",
     "invalid_payload",
     "err_name",

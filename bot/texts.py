@@ -2,6 +2,7 @@
 
 TEXTS: dict[str, dict[str, str]] = {
     "cyr": {
+        "cmd_admin": "Админ панел",
         "cmd_start": "Ботни бошлаш",
         "cmd_stats": "Статистика",
         "cmd_export": "Аризаларни юклаб олиш (CSV)",
@@ -12,6 +13,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "thanks": "Аризангизни олдик. Сиз танлаган вақтда қўнғироқ қиламиз.",
         "cooldown": "Аризангиз яқинда қабул қилинди. Илтимос, бироздан кейин қайта уриниб кўринг.",
         "server_error": "Ҳозир аризани сақлай олмадик. Илтимос, кейинроқ қайта уриниб кўринг.",
+        "admin_read_error": "Маълумотни ўқий олмадик. Кейинроқ қайта уриниб кўринг.",
         "fallback_hint": "Ариза қолдириш учун қуйидаги тугмани босинг.",
         "invalid_payload": "Ариза маълумотларини ўқий олмадик. Илтимос, шаклни қайта тўлдиринг.",
         "err_name": "Илтимос, исмингизни тўғри киритинг.",
@@ -25,6 +27,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "err_consent": "Илтимос, маълумотларингизни ушбу ариза учун ишлатишга розилигингизни белгиланг.",
     },
     "lat": {
+        "cmd_admin": "Admin panel",
         "cmd_start": "Botni boshlash",
         "cmd_stats": "Statistika",
         "cmd_export": "Arizalarni yuklab olish (CSV)",
@@ -35,6 +38,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "thanks": "Arizangizni oldik. Siz tanlagan vaqtda qoʻngʻiroq qilamiz.",
         "cooldown": "Arizangiz yaqinda qabul qilindi. Iltimos, birozdan keyin qayta urinib koʻring.",
         "server_error": "Hozir arizani saqlay olmadik. Iltimos, keyinroq qayta urinib koʻring.",
+        "admin_read_error": "Maʼlumotni oʻqiy olmadik. Keyinroq qayta urinib koʻring.",
         "fallback_hint": "Ariza qoldirish uchun quyidagi tugmani bosing.",
         "invalid_payload": "Ariza maʼlumotlarini oʻqiy olmadik. Iltimos, shaklni qayta toʻldiring.",
         "err_name": "Iltimos, ismingizni toʻgʻri kiriting.",

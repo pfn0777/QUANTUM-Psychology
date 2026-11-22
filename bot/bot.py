@@ -13,22 +13,27 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
+from aiogram.exceptions import ClientDecodeError, TelegramAPIError, TelegramBadRequest
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (
     BotCommand,
     BotCommandScopeChat,
     BotCommandScopeDefault,
     BufferedInputFile,
+    CallbackQuery,
     FSInputFile,
+    InaccessibleMessage,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
     Message,
     ReplyKeyboardMarkup,
+    User,
     WebAppInfo,
 )
 from dotenv import dotenv_values
 
+import admin_panel
 import catalog
 import leads
 import stats
@@ -62,6 +67,7 @@ def user_commands() -> list[BotCommand]:
 
 def admin_commands() -> list[BotCommand]:
     return [
+        BotCommand(command="admin", description=texts.t("cmd_admin")),
         BotCommand(command="start", description=texts.t("cmd_start")),
         BotCommand(command="stats", description=texts.t("cmd_stats")),
         BotCommand(command="export", description=texts.t("cmd_export")),
@@ -151,6 +157,9 @@ class BotHandlers:
     async def start(self, message: Message) -> None:
         parts = (message.text or "").split(maxsplit=1)
         source = parts[1].strip() if len(parts) > 1 else None
+        if message.from_user is not None:
+            user_source = source if source in catalog.DEEP_LINK_SOURCES else None
+            await self._record_user(message.from_user, user_source)
         try:
             await message.answer_photo(
                 FSInputFile(WELCOME_PHOTO),
@@ -189,8 +198,22 @@ class BotHandlers:
                 return
             self._accepted_at[user.id] = time.monotonic()
             row["id"] = lead_id
+            # Keep the retry loop from delivering the lead while the user is being recorded.
+            self._delivering_ids.add(lead_id)
+            try:
+                await self._record_user(user, None)
+            finally:
+                self._delivering_ids.discard(lead_id)
             await self._deliver(row, bot)
             await message.answer(texts.t("thanks", result.script))
+
+    async def _record_user(self, user: User, source: str | None) -> None:
+        try:
+            await self.storage.upsert_user(
+                user.id, user.username, user.full_name, source, datetime.now(timezone.utc)
+            )
+        except Exception as exc:
+            logger.error("Could not record Telegram user: %s", type(exc).__name__)
 
     async def _deliver(self, row: dict, bot: Bot) -> None:
         lead_id = row["id"]
@@ -251,6 +274,88 @@ class BotHandlers:
         rows = await self.storage.rows_since(now_utc - timedelta(days=STATS_DAYS))
         await message.answer(stats.build_stats(rows, now_utc), parse_mode=ParseMode.HTML)
 
+    async def _admin_overview(self, now_utc: datetime) -> str:
+        since = now_utc - timedelta(days=admin_panel.LOOKBACK_DAYS)
+        return admin_panel.build_overview(
+            await self.storage.count_users(),
+            await self.storage.user_rows_since(since),
+            await self.storage.count_lead_users(),
+            await self.storage.rows_since(since),
+            await self.storage.count_undelivered(),
+            now_utc,
+        )
+
+    async def admin_menu(self, message: Message) -> None:
+        if message.chat.id != self.settings.admin_chat_id:
+            return
+        try:
+            try:
+                overview = await self._admin_overview(datetime.now(timezone.utc))
+            except Exception as exc:
+                logger.error("Could not read admin panel data: %s", type(exc).__name__)
+                await message.answer(texts.t("admin_read_error"))
+                return
+            await message.answer(overview, parse_mode=ParseMode.HTML, reply_markup=admin_panel.panel_keyboard())
+        except (TelegramAPIError, ClientDecodeError) as exc:
+            logger.error("Could not send admin panel menu: %s", type(exc).__name__)
+
+    async def _admin_content(self, data: str | None, now_utc: datetime) -> str | BufferedInputFile | None:
+        if data == admin_panel.CB_OVERVIEW:
+            return await self._admin_overview(now_utc)
+        since = now_utc - timedelta(days=admin_panel.LOOKBACK_DAYS)
+        if data == admin_panel.CB_USERS:
+            return admin_panel.build_users(
+                await self.storage.count_users(), await self.storage.user_rows_since(since), now_utc
+            )
+        if data == admin_panel.CB_LEADS:
+            rows = await self.storage.rows_since(now_utc - timedelta(days=STATS_DAYS))
+            return stats.build_stats(rows, now_utc)
+        if data == admin_panel.CB_DAILY:
+            return admin_panel.build_daily(
+                await self.storage.user_rows_since(since), await self.storage.rows_since(since), now_utc
+            )
+        if data == admin_panel.CB_CSV_LEADS:
+            return BufferedInputFile(await self.storage.export_csv(), filename=f"leads_{now_utc:%Y%m%d}.csv")
+        if data == admin_panel.CB_CSV_USERS:
+            return BufferedInputFile(await self.storage.export_users_csv(), filename=f"users_{now_utc:%Y%m%d}.csv")
+        return None
+
+    async def admin_callback(self, callback: CallbackQuery) -> None:
+        message = callback.message
+        if isinstance(message, InaccessibleMessage) or (
+            message is not None and message.chat.id != self.settings.admin_chat_id
+        ):
+            message = None
+        try:
+            await callback.answer()
+        except (TelegramAPIError, ClientDecodeError) as exc:
+            logger.error("Could not answer admin panel callback: %s", type(exc).__name__)
+        if message is None:
+            return
+        try:
+            try:
+                content = await self._admin_content(callback.data, datetime.now(timezone.utc))
+            except Exception as exc:
+                logger.error("Could not read admin panel data: %s", type(exc).__name__)
+                await message.answer(texts.t("admin_read_error"))
+                return
+            if isinstance(content, BufferedInputFile):
+                await message.answer_document(content)
+            elif content is not None:
+                reply_markup = (
+                    admin_panel.panel_keyboard()
+                    if callback.data == admin_panel.CB_OVERVIEW
+                    else admin_panel.back_keyboard()
+                )
+                try:
+                    await message.edit_text(content, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
+                except TelegramBadRequest as exc:
+                    if "message is not modified" not in exc.message.lower():
+                        raise
+                    logger.info("Admin panel message is not modified")
+        except (TelegramAPIError, ClientDecodeError) as exc:
+            logger.error("Could not send admin panel response: %s", type(exc).__name__)
+
     async def fallback(self, message: Message) -> None:
         await message.answer(texts.t("fallback_hint"), reply_markup=keyboard(self.settings))
 
@@ -267,8 +372,10 @@ def build_dispatcher(handlers: BotHandlers) -> Dispatcher:
     dispatcher.message.register(handlers.start, CommandStart())
     dispatcher.message.register(handlers.export, Command("export"))
     dispatcher.message.register(handlers.statistics, Command("stats"))
+    dispatcher.message.register(handlers.admin_menu, Command("admin"))
     dispatcher.message.register(handlers.web_app_data, F.web_app_data)
     dispatcher.message.register(handlers.fallback, F.text)
+    dispatcher.callback_query.register(handlers.admin_callback, F.data.startswith(admin_panel.CALLBACK_PREFIX))
     return dispatcher
 
 
