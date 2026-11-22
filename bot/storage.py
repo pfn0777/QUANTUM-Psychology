@@ -350,6 +350,21 @@ class Storage:
             (since_iso, since_iso),
         )
 
+    async def recent_users(self, limit: int) -> list[dict]:
+        return await self._fetch_user_rows(
+            """SELECT users.*, EXISTS (
+                   SELECT 1 FROM leads WHERE leads.tg_user_id = users.tg_user_id
+               ) AS has_lead
+               FROM users ORDER BY first_seen_at DESC LIMIT ?""",
+            (limit,),
+        )
+
+    async def recent_leads(self, limit: int) -> list[dict]:
+        return await self._fetch_rows(
+            "SELECT * FROM leads ORDER BY created_at DESC, id DESC LIMIT ?",
+            (limit,),
+        )
+
     async def undelivered(self, limit: int = DEFAULT_UNDELIVERED_LIMIT) -> list[dict]:
         return await self._fetch_rows(
             "SELECT * FROM leads WHERE delivered = ? ORDER BY created_at, id LIMIT ?",
