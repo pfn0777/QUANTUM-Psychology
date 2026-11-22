@@ -1,0 +1,563 @@
+{
+  "version": 1,
+  "historyId": "cbb75f75-ec3e-4abd-8582-97c0e57e9220",
+  "currentRevision": "cb6b2676-285b-459c-a8f6-a57d85fc80dc",
+  "pendingChanges": false,
+  "files": {
+    "assets/audio/music-30s.m4a": {
+      "hash": "d077eb50039164436979157f5c981f77b8c2952a84db7dfd3e60a891e2dc0b4f",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\d0\\d077eb50039164436979157f5c981f77b8c2952a84db7dfd3e60a891e2dc0b4f"
+    },
+    "assets/fonts/cormorant-garamond-500-600-italic-cyrillic-ext.woff2": {
+      "hash": "ae25de0507a445fd9e953e90432ae75b1ee2eccb48370a6ced4934551eb56fc3",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\ae\\ae25de0507a445fd9e953e90432ae75b1ee2eccb48370a6ced4934551eb56fc3"
+    },
+    "assets/fonts/cormorant-garamond-500-600-italic-cyrillic.woff2": {
+      "hash": "cb13c04533ee98c94e49a053b9f4d39bf616fd7ba6360d71aead92a78dc571f7",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\cb\\cb13c04533ee98c94e49a053b9f4d39bf616fd7ba6360d71aead92a78dc571f7"
+    },
+    "assets/fonts/cormorant-garamond-500-600-italic-latin.woff2": {
+      "hash": "6f2f5c3b1abc3d0bb035a927f66a90ca873f94fc31c4966c8d024142c2036e55",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\6f\\6f2f5c3b1abc3d0bb035a927f66a90ca873f94fc31c4966c8d024142c2036e55"
+    },
+    "assets/fonts/cormorant-garamond-500-700-cyrillic-ext.woff2": {
+      "hash": "a4d7cf345b8091e1d2c8c5c8fa3bd0f9bb9d00bc8988185471db398ddb5ae4c4",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\a4\\a4d7cf345b8091e1d2c8c5c8fa3bd0f9bb9d00bc8988185471db398ddb5ae4c4"
+    },
+    "assets/fonts/cormorant-garamond-500-700-cyrillic.woff2": {
+      "hash": "017fab69b4be8ffc08ca312823327989ade6dc3d948f0afa125e12ec2e5e7ca1",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\01\\017fab69b4be8ffc08ca312823327989ade6dc3d948f0afa125e12ec2e5e7ca1"
+    },
+    "assets/fonts/cormorant-garamond-500-700-latin.woff2": {
+      "hash": "d80df8ff5aecd299a61549f9e29ab1ed0b9b05f4ea71d50fe978e07d5240b235",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\d8\\d80df8ff5aecd299a61549f9e29ab1ed0b9b05f4ea71d50fe978e07d5240b235"
+    },
+    "assets/fonts/montserrat-400-800-cyrillic-ext.woff2": {
+      "hash": "0f7f5f2fbb4eae126790fe6f01659ab3ee0806e8038a941908e893020569f51a",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\0f\\0f7f5f2fbb4eae126790fe6f01659ab3ee0806e8038a941908e893020569f51a"
+    },
+    "assets/fonts/montserrat-400-800-cyrillic.woff2": {
+      "hash": "a187b077090fe8ae3fd2d7496aabbeae604819c718a282e0afc92df72b450766",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\a1\\a187b077090fe8ae3fd2d7496aabbeae604819c718a282e0afc92df72b450766"
+    },
+    "assets/fonts/montserrat-400-800-latin.woff2": {
+      "hash": "06b16db7a969135d48d38c49183be7fb88d4452e2a3011957c7851941f4e4879",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\06\\06b16db7a969135d48d38c49183be7fb88d4452e2a3011957c7851941f4e4879"
+    },
+    "assets/hero-banner-cyr.webp": {
+      "hash": "a3e20f510b3846f02b59b16961044351f110bbc74151d8ac5dadabf317cc7527",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\a3\\a3e20f510b3846f02b59b16961044351f110bbc74151d8ac5dadabf317cc7527"
+    },
+    "assets/logo-mark-light.svg": {
+      "hash": "473789a6f755d2ff69a029fc9a6bb21646ae87dbc3606c6ebbdcc7de3cbd4425",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\47\\473789a6f755d2ff69a029fc9a6bb21646ae87dbc3606c6ebbdcc7de3cbd4425"
+    },
+    "assets/logo-mark.svg": {
+      "hash": "50e0c6d678c6bbe1df20d25f72b0f7f4adbd9e50b62cace8abbe484a358133d7",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\50\\50e0c6d678c6bbe1df20d25f72b0f7f4adbd9e50b62cace8abbe484a358133d7"
+    },
+    "assets/screens/02-modules-long.png": {
+      "hash": "284dd3758f238520b9c8ba19895f998cda0f2c14aa80060ab475fe4a146b7927",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\28\\284dd3758f238520b9c8ba19895f998cda0f2c14aa80060ab475fe4a146b7927"
+    },
+    "assets/screens/02-modules.png": {
+      "hash": "426917e6bc1c0c2a44ba418986cade6d41d2bb7b636201d9873e69af50f7a373",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\42\\426917e6bc1c0c2a44ba418986cade6d41d2bb7b636201d9873e69af50f7a373"
+    },
+    "assets/screens/03-form.png": {
+      "hash": "5e917b94bbeee3d34304921922480bb409cbafe4bef00d25268cf7bd6df5223c",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\5e\\5e917b94bbeee3d34304921922480bb409cbafe4bef00d25268cf7bd6df5223c"
+    },
+    "assets/screens/03a-form-top.png": {
+      "hash": "af0f0761055d19d7dbdd29ddf3b3d2679ef030566c33dd603d494f71dd6b0a79",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\af\\af0f0761055d19d7dbdd29ddf3b3d2679ef030566c33dd603d494f71dd6b0a79"
+    },
+    "assets/screens/04-success.png": {
+      "hash": "bac35d93b6102d4b88f266f8c654259edba2102ac3b0b7f8603fa8c397b305f1",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\ba\\bac35d93b6102d4b88f266f8c654259edba2102ac3b0b7f8603fa8c397b305f1"
+    },
+    "assets/screens/05-about.png": {
+      "hash": "952775ace579b78a30b0b22ab2921b1b6ad92d0c100f2972b8c7a2774957cb52",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\95\\952775ace579b78a30b0b22ab2921b1b6ad92d0c100f2972b8c7a2774957cb52"
+    },
+    "assets/screens-lat/02-modules-long.png": {
+      "hash": "081907e2f62d731cc6c22c2b7adf47dbd13551ba4718945c85a1cd7b0d89edf7",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\08\\081907e2f62d731cc6c22c2b7adf47dbd13551ba4718945c85a1cd7b0d89edf7"
+    },
+    "assets/screens-lat/02-modules.png": {
+      "hash": "9225ac4d09faf06806d9b3bf39fe964fa74d64b17c98cc6ce9aa448f4a9d6202",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\92\\9225ac4d09faf06806d9b3bf39fe964fa74d64b17c98cc6ce9aa448f4a9d6202"
+    },
+    "assets/screens-lat/03-form.png": {
+      "hash": "8702283d7f9e59907daa72eaba9a5a6fe77ca5e1866ad39c779f72656d3c45d6",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\87\\8702283d7f9e59907daa72eaba9a5a6fe77ca5e1866ad39c779f72656d3c45d6"
+    },
+    "assets/screens-lat/03a-form-top.png": {
+      "hash": "c0db3f90ccecde1cf639013614336f4638e23e058b41a71a151755082680d0e2",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\c0\\c0db3f90ccecde1cf639013614336f4638e23e058b41a71a151755082680d0e2"
+    },
+    "assets/screens-lat/04-success.png": {
+      "hash": "f1f5737d34afc79ce96637895381d59a50c7cd0201f89bb6300af453f9743488",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\f1\\f1f5737d34afc79ce96637895381d59a50c7cd0201f89bb6300af453f9743488"
+    },
+    "assets/screens-lat/05-about.png": {
+      "hash": "8d033a11c1324eb72ae16aca5401310a07992d6b4d36a3c5c9435f72cbc13e3b",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\8d\\8d033a11c1324eb72ae16aca5401310a07992d6b4d36a3c5c9435f72cbc13e3b"
+    },
+    "compositions/bot.html": {
+      "hash": "df9760d0174fdf939110b5eb3047b9d3232a2e74eee7682bd848ff34e8c28823",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\df\\df9760d0174fdf939110b5eb3047b9d3232a2e74eee7682bd848ff34e8c28823"
+    },
+    "compositions/cta.html": {
+      "hash": "f7952f99a1eaa1cc92b2785a865159ba40c30fe197cbccd88d582e686ed04ab6",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\f7\\f7952f99a1eaa1cc92b2785a865159ba40c30fe197cbccd88d582e686ed04ab6"
+    },
+    "compositions/form.html": {
+      "hash": "5dc26f981ec57a7da4b07b77a0045d0e999a6cd63876dbdebf9d45979a3fd20c",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\5d\\5dc26f981ec57a7da4b07b77a0045d0e999a6cd63876dbdebf9d45979a3fd20c"
+    },
+    "compositions/hook.html": {
+      "hash": "9932ba735929dac30455816fb41e5a90e76cb9de43e9e59d3660baf3d27527d4",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\99\\9932ba735929dac30455816fb41e5a90e76cb9de43e9e59d3660baf3d27527d4"
+    },
+    "compositions/miniapp.html": {
+      "hash": "3b66bf91ca9c1a1097057cb6772c630cf6dd5bccaa73f68948fbd6b477bc6842",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\3b\\3b66bf91ca9c1a1097057cb6772c630cf6dd5bccaa73f68948fbd6b477bc6842"
+    },
+    "compositions/promise.html": {
+      "hash": "e7accd2935fc0897d11e54844c1b44004af1bdf37dbecec7254069e75dbe411f",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\e7\\e7accd2935fc0897d11e54844c1b44004af1bdf37dbecec7254069e75dbe411f"
+    },
+    "hyperframes.json": {
+      "hash": "35a6d4ea79ebe911f0d81705f7aace5d8ff0316b745b0311d56af50c9c237cb7",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\35\\35a6d4ea79ebe911f0d81705f7aace5d8ff0316b745b0311d56af50c9c237cb7"
+    },
+    "index.html": {
+      "hash": "010992da0f52c858d54008565feab151e3665415c317602dcaf0da0d0bce7b4f",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\01\\010992da0f52c858d54008565feab151e3665415c317602dcaf0da0d0bce7b4f"
+    },
+    "meta.json": {
+      "hash": "e929fd8a4c8e1f8e706756fabb3a9d649f4de16653e80d22151984fcb38913e3",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\e9\\e929fd8a4c8e1f8e706756fabb3a9d649f4de16653e80d22151984fcb38913e3"
+    },
+    "package.json": {
+      "hash": "78bf05dcc618e6fe4d907843eed10729b15241268dbb00de2d1c96623cd7a1dd",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\78\\78bf05dcc618e6fe4d907843eed10729b15241268dbb00de2d1c96623cd7a1dd"
+    },
+    "assets/screens/01-hero.png": {
+      "hash": "d3174e3a1fda21409a9ba09dde748f078f448c63fca81de27c1e51b6492b4413",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\d3\\d3174e3a1fda21409a9ba09dde748f078f448c63fca81de27c1e51b6492b4413"
+    },
+    "assets/screens-lat/01-hero.png": {
+      "hash": "acb1927646705aef288ee011803b383199b3e28078edb714e8a04c557c3a5e42",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\ac\\acb1927646705aef288ee011803b383199b3e28078edb714e8a04c557c3a5e42"
+    },
+    "assets/welcome.png": {
+      "hash": "31f32ef12008a2518b63cef65b0878ee6792ea1e9d6a415086f2a9b92d0e244b",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\31\\31f32ef12008a2518b63cef65b0878ee6792ea1e9d6a415086f2a9b92d0e244b"
+    },
+    "snapshots/frame-00-at-0.9s.png": {
+      "hash": "52a1857960ef674d945fa59e421b538ef8f8fb7079ca967720f4c63f1ae7527c",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\52\\52a1857960ef674d945fa59e421b538ef8f8fb7079ca967720f4c63f1ae7527c"
+    },
+    "snapshots/frame-01-at-1.5s.png": {
+      "hash": "e0142da2ac8e5f19c2969df44f807a3308ce3c05b1c0a8f684220cbdfee0706f",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\e0\\e0142da2ac8e5f19c2969df44f807a3308ce3c05b1c0a8f684220cbdfee0706f"
+    },
+    "snapshots/frame-02-at-4.5s.png": {
+      "hash": "a95a3f0b1a11464472adb6a5d91df5bae7766ee33bafc443574d00c833575f4c",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\a9\\a95a3f0b1a11464472adb6a5d91df5bae7766ee33bafc443574d00c833575f4c"
+    },
+    "snapshots/frame-03-at-9s.png": {
+      "hash": "14e03959e706850ccb5bafa13e6778ab1f6719244e2de33686b87a112e6913b9",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\14\\14e03959e706850ccb5bafa13e6778ab1f6719244e2de33686b87a112e6913b9"
+    },
+    "snapshots/frame-04-at-13s.png": {
+      "hash": "c343ae3d0d36959687f03038c06d742d7425d375e38c51cc62b65f8b096d4d98",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\c3\\c343ae3d0d36959687f03038c06d742d7425d375e38c51cc62b65f8b096d4d98"
+    },
+    "snapshots/frame-05-at-13.8s.png": {
+      "hash": "cae5625f4e942342275f5dae7475b6553e2d2c74cd11bd370f12cfb631889e39",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\ca\\cae5625f4e942342275f5dae7475b6553e2d2c74cd11bd370f12cfb631889e39"
+    },
+    "snapshots/frame-06-at-16s.png": {
+      "hash": "9fcad66b8d7eb04c7f6fa4599f89bffee72e19b3953b8749cbc1655e6df53288",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\9f\\9fcad66b8d7eb04c7f6fa4599f89bffee72e19b3953b8749cbc1655e6df53288"
+    },
+    "snapshots/frame-07-at-20s.png": {
+      "hash": "70fa4c3e90c0cbfd906c0a8743a1f78c7c62ebec17d3574e104739673b5e98b6",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\70\\70fa4c3e90c0cbfd906c0a8743a1f78c7c62ebec17d3574e104739673b5e98b6"
+    },
+    "snapshots/frame-08-at-22.5s.png": {
+      "hash": "33d84a96d709323a169f7e6b459c6dfa8b783fd50e4e41174aeb3ba4c308205c",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\33\\33d84a96d709323a169f7e6b459c6dfa8b783fd50e4e41174aeb3ba4c308205c"
+    },
+    "snapshots/frame-09-at-27s.png": {
+      "hash": "e1af9aa381b64638b20d73e770c7c1ad1db52f697f9140419430ecdcbcdd03ad",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\e1\\e1af9aa381b64638b20d73e770c7c1ad1db52f697f9140419430ecdcbcdd03ad"
+    },
+    "snapshots/frame-10-at-29.75s.png": {
+      "hash": "483094fa53b37996c682c6e5f9f13d032bc16f941a78f84cd15f7d3f68883986",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\48\\483094fa53b37996c682c6e5f9f13d032bc16f941a78f84cd15f7d3f68883986"
+    },
+    "snapshots/contact-sheet-1.jpg": {
+      "hash": "3ee132a39be9f61523ec0d3024f7867aa9db9c18698e425e118672cbedafdcaf",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\3e\\3ee132a39be9f61523ec0d3024f7867aa9db9c18698e425e118672cbedafdcaf"
+    },
+    "snapshots/contact-sheet-2.jpg": {
+      "hash": "4f2537a6bbb70bb673307ca64e5c9a2792f6c18284ea0cfc41909650e22fe784",
+      "content": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\4f\\4f2537a6bbb70bb673307ca64e5c9a2792f6c18284ea0cfc41909650e22fe784"
+    }
+  },
+  "revisions": {
+    "cb6b2676-285b-459c-a8f6-a57d85fc80dc": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1795273591064,
+      "endedAt": 1795273591224,
+      "files": {
+        "snapshots/contact-sheet-1.jpg": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\3e\\3ee132a39be9f61523ec0d3024f7867aa9db9c18698e425e118672cbedafdcaf"
+        },
+        "snapshots/contact-sheet-2.jpg": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\4f\\4f2537a6bbb70bb673307ca64e5c9a2792f6c18284ea0cfc41909650e22fe784"
+        },
+        "snapshots/frame-00-at-0.9s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\52\\52a1857960ef674d945fa59e421b538ef8f8fb7079ca967720f4c63f1ae7527c"
+        },
+        "snapshots/frame-01-at-1.5s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\e0\\e0142da2ac8e5f19c2969df44f807a3308ce3c05b1c0a8f684220cbdfee0706f"
+        },
+        "snapshots/frame-02-at-4.5s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\a9\\a95a3f0b1a11464472adb6a5d91df5bae7766ee33bafc443574d00c833575f4c"
+        },
+        "snapshots/frame-03-at-9s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\14\\14e03959e706850ccb5bafa13e6778ab1f6719244e2de33686b87a112e6913b9"
+        },
+        "snapshots/frame-04-at-13s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\c3\\c343ae3d0d36959687f03038c06d742d7425d375e38c51cc62b65f8b096d4d98"
+        },
+        "snapshots/frame-05-at-13.8s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\ca\\cae5625f4e942342275f5dae7475b6553e2d2c74cd11bd370f12cfb631889e39"
+        },
+        "snapshots/frame-06-at-16s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\9f\\9fcad66b8d7eb04c7f6fa4599f89bffee72e19b3953b8749cbc1655e6df53288"
+        },
+        "snapshots/frame-07-at-20s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\70\\70fa4c3e90c0cbfd906c0a8743a1f78c7c62ebec17d3574e104739673b5e98b6"
+        },
+        "snapshots/frame-08-at-22.5s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\33\\33d84a96d709323a169f7e6b459c6dfa8b783fd50e4e41174aeb3ba4c308205c"
+        },
+        "snapshots/frame-09-at-27s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\e1\\e1af9aa381b64638b20d73e770c7c1ad1db52f697f9140419430ecdcbcdd03ad"
+        },
+        "snapshots/frame-10-at-29.75s.png": {
+          "before": null,
+          "after": "C:\\Users\\user\\.cache\\hyperframes\\history\\cbb75f75-ec3e-4abd-8582-97c0e57e9220\\blobs\\48\\483094fa53b37996c682c6e5f9f13d032bc16f941a78f84cd15f7d3f68883986"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "c4e9e963-2eb0-4ae5-a291-2b7f1bd6d642"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "c4e9e963-2eb0-4ae5-a291-2b7f1bd6d642",
+        "scope": "project",
+        "report": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\.hyperframes\\artifacts\\checks\\c4e9e963-2eb0-4ae5-a291-2b7f1bd6d642.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 45000,
+            "cache": true,
+            "contrast": true,
+            "craft": true,
+            "strict": false,
+            "snapshots": false,
+            "safeZones": [
+              "tiktok",
+              "reels",
+              "shorts"
+            ],
+            "browserGpuMode": "auto",
+            "includeUnmounted": false
+          }
+        },
+        "createdAt": 1795273175667,
+        "contentHash": "e0503cbb050c7dc21d483dedda7143f8629a6144c1a316529fdafb21a2694704",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-10"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-0",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-00-at-0.9s.png",
+        "time": 0.9,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572008,
+        "contentHash": "52a1857960ef674d945fa59e421b538ef8f8fb7079ca967720f4c63f1ae7527c",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-1",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-01-at-1.5s.png",
+        "time": 1.5,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572008,
+        "contentHash": "e0142da2ac8e5f19c2969df44f807a3308ce3c05b1c0a8f684220cbdfee0706f",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-2",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-02-at-4.5s.png",
+        "time": 4.5,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572009,
+        "contentHash": "a95a3f0b1a11464472adb6a5d91df5bae7766ee33bafc443574d00c833575f4c",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-3",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-03-at-9s.png",
+        "time": 9,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572009,
+        "contentHash": "14e03959e706850ccb5bafa13e6778ab1f6719244e2de33686b87a112e6913b9",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-4",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-04-at-13s.png",
+        "time": 13,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572009,
+        "contentHash": "c343ae3d0d36959687f03038c06d742d7425d375e38c51cc62b65f8b096d4d98",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-5",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-05-at-13.8s.png",
+        "time": 13.8,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572010,
+        "contentHash": "cae5625f4e942342275f5dae7475b6553e2d2c74cd11bd370f12cfb631889e39",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-6",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-06-at-16s.png",
+        "time": 16,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572010,
+        "contentHash": "9fcad66b8d7eb04c7f6fa4599f89bffee72e19b3953b8749cbc1655e6df53288",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-7",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-07-at-20s.png",
+        "time": 20,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572010,
+        "contentHash": "70fa4c3e90c0cbfd906c0a8743a1f78c7c62ebec17d3574e104739673b5e98b6",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-8",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-08-at-22.5s.png",
+        "time": 22.5,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572011,
+        "contentHash": "33d84a96d709323a169f7e6b459c6dfa8b783fd50e4e41174aeb3ba4c308205c",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-9",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-09-at-27s.png",
+        "time": 27,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572012,
+        "contentHash": "e1af9aa381b64638b20d73e770c7c1ad1db52f697f9140419430ecdcbcdd03ad",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      },
+      {
+        "scope": "full",
+        "id": "7328182c-b387-487b-8d7d-96ec4a69b1b2-10",
+        "image": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\promo-lat\\snapshots\\frame-10-at-29.75s.png",
+        "time": 29.75,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1795273572012,
+        "contentHash": "483094fa53b37996c682c6e5f9f13d032bc16f941a78f84cd15f7d3f68883986",
+        "revision": null,
+        "inputFingerprint": "3b41c5e1837dbecfc9b4a8ab16f924c5c2138118d253e3e9b70b17642f34d9c0",
+        "inputScope": "local-project-files",
+        "attribution": "inputs-changed"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "150b8cc8-6dce-43ad-9414-9820c0fde6ba",
+      "completedAt": 1795273733446,
+      "output": "C:\\Users\\user\\Videos\\QUANTUM Psychology\\video\\out\\quantum-promo-30s-lat.mp4",
+      "status": "completed",
+      "revision": "cb6b2676-285b-459c-a8f6-a57d85fc80dc"
+    },
+    "retainedRevisions": [
+      "cb6b2676-285b-459c-a8f6-a57d85fc80dc"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

@@ -1,0 +1,720 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 7
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 10,
+    "infoCount": 4,
+    "findings": [
+      {
+        "selector": "#hook-wordmark",
+        "dataAttributes": {},
+        "sourceFile": "compositions/hook.html",
+        "bbox": {
+          "x": 243.97,
+          "y": 913,
+          "width": 592.05,
+          "height": 135
+        },
+        "time": 1.667,
+        "rect": {
+          "left": 243.97,
+          "top": 913,
+          "right": 836.02,
+          "bottom": 1048,
+          "width": 592.05,
+          "height": 135
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "QUANTUM",
+        "message": "<div> \"QUANTUM\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.667,
+        "lastSeen": 1.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.667
+        ]
+      },
+      {
+        "selector": "#bot-caption",
+        "dataAttributes": {},
+        "sourceFile": "compositions/bot.html",
+        "bbox": {
+          "x": 188,
+          "y": 851,
+          "width": 675.7,
+          "height": 292.81
+        },
+        "time": 8.333,
+        "rect": {
+          "left": 188,
+          "top": 851,
+          "right": 863.7,
+          "bottom": 1143.81,
+          "width": 675.7,
+          "height": 292.81
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Ассалому алайкум! QUANTUM Psychology’га хуш кели",
+        "message": "<div> \"Ассалому алайкум! QUANTUM Psychology’га хуш кели\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.333,
+        "lastSeen": 11.667,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.333,
+          11.667
+        ]
+      },
+      {
+        "selector": "#bot-more",
+        "dataAttributes": {},
+        "sourceFile": "compositions/bot.html",
+        "bbox": {
+          "x": 339.38,
+          "y": 1331,
+          "width": 393.23,
+          "height": 38
+        },
+        "time": 8.333,
+        "rect": {
+          "left": 339.38,
+          "top": 1331,
+          "right": 732.61,
+          "bottom": 1369,
+          "width": 393.23,
+          "height": 38
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Қўшимча маълумотлар",
+        "message": "<div> \"Қўшимча маълумотлар\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.333,
+        "lastSeen": 11.667,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.333,
+          11.667
+        ]
+      },
+      {
+        "selector": "#bot-reply",
+        "dataAttributes": {},
+        "sourceFile": "compositions/bot.html",
+        "bbox": {
+          "x": 341.5,
+          "y": 1479.5,
+          "width": 393,
+          "height": 37
+        },
+        "time": 8.333,
+        "rect": {
+          "left": 341.5,
+          "top": 1479.5,
+          "right": 734.5,
+          "bottom": 1516.5,
+          "width": 393,
+          "height": 37
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Бепул суҳбатга ёзилиш",
+        "message": "<div> \"Бепул суҳбатга ёзилиш\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.333,
+        "lastSeen": 11.667,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.333,
+          11.667
+        ]
+      },
+      {
+        "selector": "#bot-label",
+        "dataAttributes": {},
+        "sourceFile": "compositions/bot.html",
+        "bbox": {
+          "x": 420.58,
+          "y": 1620,
+          "width": 238.83,
+          "height": 55
+        },
+        "time": 8.333,
+        "rect": {
+          "left": 420.58,
+          "top": 1620,
+          "right": 659.41,
+          "bottom": 1675,
+          "width": 238.83,
+          "height": 55
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Telegram бот",
+        "message": "<div> \"Telegram бот\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.333,
+        "lastSeen": 11.667,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.333,
+          11.667
+        ]
+      },
+      {
+        "selector": "#mini-caption",
+        "dataAttributes": {},
+        "sourceFile": "compositions/miniapp.html",
+        "bbox": {
+          "x": 319.31,
+          "y": 1620,
+          "width": 441.38,
+          "height": 55
+        },
+        "time": 15,
+        "rect": {
+          "left": 319.31,
+          "top": 1620,
+          "right": 760.69,
+          "bottom": 1675,
+          "width": 441.38,
+          "height": 55
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "12 oylik dastur · 12 modul",
+        "message": "<div> \"12 oylik dastur · 12 modul\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 15,
+        "lastSeen": 15,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15
+        ]
+      },
+      {
+        "selector": "#form-caption",
+        "dataAttributes": {},
+        "sourceFile": "compositions/form.html",
+        "bbox": {
+          "x": 369.03,
+          "y": 1620,
+          "width": 341.92,
+          "height": 55
+        },
+        "time": 18.333,
+        "rect": {
+          "left": 369.03,
+          "top": 1620,
+          "right": 710.95,
+          "bottom": 1675,
+          "width": 341.92,
+          "height": 55
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Ariza — 1 daqiqada",
+        "message": "<div> \"Ariza — 1 daqiqada\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 18.333,
+        "lastSeen": 21.667,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          18.333,
+          21.667
+        ]
+      },
+      {
+        "selector": "#cta-heading",
+        "dataAttributes": {},
+        "sourceFile": "compositions/cta.html",
+        "bbox": {
+          "x": 159.83,
+          "y": 721,
+          "width": 760.33,
+          "height": 221.95
+        },
+        "time": 25,
+        "rect": {
+          "left": 159.83,
+          "top": 721,
+          "right": 920.16,
+          "bottom": 942.95,
+          "width": 760.33,
+          "height": 221.95
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Dastlabki suhbat —BEPUL",
+        "message": "<div> \"Dastlabki suhbat —BEPUL\" is outside the safe area: TikTok (right edge), YouTube Shorts (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 25,
+        "lastSeen": 28.333,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          25,
+          28.333
+        ]
+      },
+      {
+        "selector": "#cta-handle",
+        "dataAttributes": {},
+        "sourceFile": "compositions/cta.html",
+        "bbox": {
+          "x": 281.5,
+          "y": 1025.45,
+          "width": 517,
+          "height": 62
+        },
+        "time": 25,
+        "rect": {
+          "left": 281.5,
+          "top": 1025.45,
+          "right": 798.5,
+          "bottom": 1087.45,
+          "width": 517,
+          "height": 62
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "@quantum_PsyBot",
+        "message": "<div> \"@quantum_PsyBot\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 25,
+        "lastSeen": 28.333,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          25,
+          28.333
+        ]
+      },
+      {
+        "selector": "#cta-button",
+        "dataAttributes": {},
+        "sourceFile": "compositions/cta.html",
+        "bbox": {
+          "x": 279.5,
+          "y": 1241,
+          "width": 520.98,
+          "height": 50
+        },
+        "time": 28.333,
+        "rect": {
+          "left": 279.5,
+          "top": 1241,
+          "right": 800.48,
+          "bottom": 1291,
+          "width": 520.98,
+          "height": 50
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Bepul suhbatga yozilish",
+        "message": "<div> \"Bepul suhbatga yozilish\" is outside the safe area: TikTok (right and bottom edges), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 28.333,
+        "lastSeen": 28.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          28.333
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 15,
+        "selector": "#mini-modules",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 136,
+          "top": 339.73,
+          "right": 944,
+          "bottom": 6666.98,
+          "width": 808,
+          "height": 6327.25
+        },
+        "containerSelector": "#mini-screen",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 136,
+          "top": 341,
+          "right": 944,
+          "bottom": 1569,
+          "width": 808,
+          "height": 1228
+        },
+        "overflow": {
+          "bottom": 5097.98
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "mini-modules",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/miniapp.html",
+        "bbox": {
+          "x": 136,
+          "y": 339.73,
+          "width": 808,
+          "height": 6327.25
+        },
+        "firstSeen": 15,
+        "lastSeen": 15,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15
+        ]
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 15,
+        "selector": "#mini-modules",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": 136,
+          "top": 339.73,
+          "right": 944,
+          "bottom": 6666.98,
+          "width": 808,
+          "height": 6327.25
+        },
+        "containerSelector": "#mini-screen",
+        "text": "",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 136,
+          "top": 341,
+          "right": 944,
+          "bottom": 1569,
+          "width": 808,
+          "height": 1228
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "mini-modules",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/miniapp.html",
+        "bbox": {
+          "x": 136,
+          "y": 339.73,
+          "width": 808,
+          "height": 6327.25
+        },
+        "firstSeen": 15,
+        "lastSeen": 15,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 18.333,
+        "selector": "#form-top",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 134.1,
+          "top": 338.11,
+          "right": 945.9,
+          "bottom": 2094.93,
+          "width": 811.8,
+          "height": 1756.81
+        },
+        "containerSelector": "#form-screen",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 134.1,
+          "top": 338.11,
+          "right": 945.9,
+          "bottom": 1571.89,
+          "width": 811.8,
+          "height": 1233.77
+        },
+        "overflow": {
+          "bottom": 523.04
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "form-top",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/form.html",
+        "bbox": {
+          "x": 134.1,
+          "y": 338.11,
+          "width": 811.8,
+          "height": 1756.81
+        },
+        "firstSeen": 18.333,
+        "lastSeen": 18.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          18.333
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 21.667,
+        "selector": "#form-bottom",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 136,
+          "top": -19,
+          "right": 944,
+          "bottom": 1729.59,
+          "width": 808,
+          "height": 1748.59
+        },
+        "containerSelector": "#form-screen",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 136,
+          "top": 341,
+          "right": 944,
+          "bottom": 1569,
+          "width": 808,
+          "height": 1228
+        },
+        "overflow": {
+          "top": 360,
+          "bottom": 160.59
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "form-bottom",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/form.html",
+        "bbox": {
+          "x": 136,
+          "y": -19,
+          "width": 808,
+          "height": 1748.59
+        },
+        "firstSeen": 21.667,
+        "lastSeen": 21.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          21.667
+        ]
+      }
+    ],
+    "duration": 30,
+    "samples": [
+      1.667,
+      5,
+      8.333,
+      11.667,
+      15,
+      18.333,
+      21.667,
+      25,
+      28.333
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 14,
+    "truncated": false,
+    "faceCheck": {
+      "ran": true,
+      "candidates": 0,
+      "faces": 0
+    }
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      1.667,
+      8.333,
+      15,
+      21.667,
+      28.333
+    ],
+    "checked": 10,
+    "passed": 10
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 shows only the background, and the first frame is the thumbnail on social players: have the title or key image already on screen at 0 s instead of entering from nothing; see references/review.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Ассалому алайкум! QUANTUM Psychology’га хуш келибсиз. Биз...\" (29 words) is on screen 4.83 s (±0.01 s), under its 6.90 s floor: hold it about 0.5 s + 0.3 s a word (9.20 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Ассалому алайкум! QUANTUM Psychology’га хуш келибсиз. Бизда шахсий ва руҳий ривожланиш учун 12 ойлик дастур бор. Дастур ҳақида танишишни истасангиз, пастдаги «Бепул суҳбатга ёзилиш» тугмани босинг. Дастлабки суҳбат бепул.",
+        "selector": "#bot-caption",
+        "dataAttributes": {},
+        "sourceFile": "compositions/bot.html",
+        "bbox": {
+          "x": 188,
+          "y": 880.02,
+          "width": 675.7,
+          "height": 292.81999999999994
+        },
+        "time": 7.539,
+        "words": 29,
+        "seconds": 4.828,
+        "floorSeconds": 6.9,
+        "measured": [
+          {
+            "time": 7.25,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.375,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 7.5,
+            "opacity": 0.42,
+            "heightPx": 293
+          },
+          {
+            "time": 7.625,
+            "opacity": 0.76,
+            "heightPx": 293
+          },
+          {
+            "time": 7.75,
+            "opacity": 0.94,
+            "heightPx": 293
+          },
+          {
+            "time": 7.875,
+            "opacity": 0.99,
+            "heightPx": 293
+          },
+          {
+            "time": 8,
+            "opacity": 1,
+            "heightPx": 293
+          },
+          {
+            "time": 11.875,
+            "opacity": 1,
+            "heightPx": 293
+          },
+          {
+            "time": 12,
+            "opacity": 1,
+            "heightPx": 293
+          },
+          {
+            "time": 12.125,
+            "opacity": 1,
+            "heightPx": 293
+          },
+          {
+            "time": 12.25,
+            "opacity": 1,
+            "heightPx": 293
+          },
+          {
+            "time": 12.375,
+            "opacity": 0.36,
+            "heightPx": 293
+          },
+          {
+            "time": 12.5,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 12.625,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 240
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}
