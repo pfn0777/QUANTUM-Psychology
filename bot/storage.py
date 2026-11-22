@@ -10,6 +10,8 @@ from pathlib import Path
 
 import aiosqlite
 
+from leads import UZ_FULL_DIGITS, UZBEKISTAN_PHONE_PREFIX
+
 
 CSV_COLUMNS = (
     "id",
@@ -30,9 +32,30 @@ CSV_COLUMNS = (
     "delivered",
 )
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+PHONE_COLUMN = "phone"
+# Group sizes after the 998 country code: 90 123 45 67.
+UZ_PHONE_GROUP_SIZES = (2, 3, 2, 2)
+UZ_PHONE_EXPORT_SEPARATOR = " "
 DEFAULT_UNDELIVERED_LIMIT = 50
 UNDELIVERED = 0
 DELIVERED = 1
+
+
+def format_uz_phone(value: str) -> str | None:
+    """Return '998 XX XXX XX XX' for a stored +998 number, else None."""
+    full_prefix = "+" + UZBEKISTAN_PHONE_PREFIX
+    digits = value[1:]
+    if not value.startswith(full_prefix) or not (
+        digits.isascii() and digits.isdigit() and len(digits) == UZ_FULL_DIGITS
+    ):
+        return None
+    national = digits[len(UZBEKISTAN_PHONE_PREFIX):]
+    groups = [UZBEKISTAN_PHONE_PREFIX]
+    start = 0
+    for size in UZ_PHONE_GROUP_SIZES:
+        groups.append(national[start:start + size])
+        start += size
+    return UZ_PHONE_EXPORT_SEPARATOR.join(groups)
 
 
 class Storage:
@@ -200,7 +223,12 @@ class Storage:
                 else:
                     value = column_labels.get(value, value)
                 cell = str(value)
-                if cell.startswith(CSV_FORMULA_PREFIXES):
+                formatted_phone = (
+                    format_uz_phone(cell) if column == PHONE_COLUMN else None
+                )
+                if formatted_phone is not None:
+                    cell = formatted_phone
+                elif cell.startswith(CSV_FORMULA_PREFIXES):
                     cell = "'" + cell
                 cells.append(cell)
             writer.writerow(cells)

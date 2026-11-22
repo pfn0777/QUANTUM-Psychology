@@ -160,7 +160,7 @@ async def test_export_csv_labels_bom_and_formula_guard(tmp_path) -> None:
         rows = csv_rows(data)
         row = rows[0]
         assert row["name"] == "'=HYPERLINK(\"https://example.test\")"
-        assert row["phone"] == "'+998901234567"
+        assert row["phone"] == "998 90 123 45 67"
         assert row["comment"] == "'-1"
         assert row["tg_username"] == "'@x"
         assert row["topics"] == "Оила, Қўрқув"
@@ -168,6 +168,45 @@ async def test_export_csv_labels_bom_and_formula_guard(tmp_path) -> None:
         assert row["prior"] == "Йўқ"
         assert rows[1]["tg_full_name"] == "'\tTabbed"
         assert rows[1]["comment"] == "'\rCarriage"
+    finally:
+        await storage.close()
+
+
+@pytest.mark.asyncio
+async def test_export_csv_formats_uzbek_phone_without_plus_or_quote(tmp_path) -> None:
+    storage = Storage(tmp_path / "leads.db")
+    await storage.init()
+    try:
+        await storage.save(make_lead(phone="+998901234567"))
+        rows = csv_rows(await storage.export_csv())
+        assert rows[0]["phone"] == "998 90 123 45 67"
+        stored = await storage.all_rows()
+        assert stored[0]["phone"] == "+998901234567"
+    finally:
+        await storage.close()
+
+
+@pytest.mark.asyncio
+async def test_export_csv_keeps_guard_on_foreign_phone(tmp_path) -> None:
+    storage = Storage(tmp_path / "leads.db")
+    await storage.init()
+    try:
+        await storage.save(make_lead(phone="+79123456789"))
+        rows = csv_rows(await storage.export_csv())
+        assert rows[0]["phone"] == "'+79123456789"
+    finally:
+        await storage.close()
+
+
+@pytest.mark.asyncio
+async def test_export_csv_keeps_formula_guard_on_name_and_comment(tmp_path) -> None:
+    storage = Storage(tmp_path / "leads.db")
+    await storage.init()
+    try:
+        await storage.save(make_lead(name="=1+1", comment="=SUM(A1)"))
+        rows = csv_rows(await storage.export_csv())
+        assert rows[0]["name"] == "'=1+1"
+        assert rows[0]["comment"] == "'=SUM(A1)"
     finally:
         await storage.close()
 
