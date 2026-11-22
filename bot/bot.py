@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlencode, urlparse, urlsplit, urlunsplit
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
@@ -21,6 +23,7 @@ from aiogram.types import (
     BotCommandScopeDefault,
     BufferedInputFile,
     CallbackQuery,
+    Chat,
     FSInputFile,
     InaccessibleMessage,
     InlineKeyboardButton,
@@ -46,6 +49,12 @@ BOT_DIR = Path(__file__).resolve().parent
 WELCOME_PHOTO = BOT_DIR / "assets" / "welcome.png"
 MORE_INFO_URL = "https://birjoyda.vercel.app/quantum-psychology"
 DEFAULT_DB_PATH = BOT_DIR / "data" / "leads.db"
+DEFAULT_PANEL_PORT = 8090
+MIN_PANEL_PORT = 1
+MAX_PANEL_PORT = 65535
+MAX_DNS_NAME_LENGTH = 253
+MAX_DNS_LABEL_LENGTH = 63
+DNS_LABEL_PATTERN = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?")
 STATS_DAYS = max(stats.PERIOD_DAYS)
 
 
@@ -59,6 +68,9 @@ class Settings:
     admin_chat_id: int
     webapp_url: str
     db_path: Path
+    viewer_ids: frozenset[int] = frozenset()
+    panel_url: str = ""
+    panel_port: int = DEFAULT_PANEL_PORT
 
 
 def user_commands() -> list[BotCommand]:
@@ -79,12 +91,24 @@ async def setup_commands(bot: Bot, settings: Settings) -> None:
         await bot.set_my_commands(user_commands(), scope=BotCommandScopeDefault())
     except Exception as exc:
         logger.error("Could not set bot commands: %s", type(exc).__name__)
+    for chat_id in (settings.admin_chat_id, *settings.viewer_ids):
+        try:
+            await bot.set_my_commands(admin_commands(), scope=BotCommandScopeChat(chat_id=chat_id))
+        except Exception as exc:
+            logger.error("Could not set bot commands: %s", type(exc).__name__)
+
+
+def _is_valid_panel_host(host: str | None) -> bool:
+    if not host:
+        return False
     try:
-        await bot.set_my_commands(
-            admin_commands(), scope=BotCommandScopeChat(chat_id=settings.admin_chat_id)
+        ipaddress.ip_address(host)
+    except ValueError:
+        return len(host) <= MAX_DNS_NAME_LENGTH and all(
+            len(label) <= MAX_DNS_LABEL_LENGTH and DNS_LABEL_PATTERN.fullmatch(label)
+            for label in host.split(".")
         )
-    except Exception as exc:
-        logger.error("Could not set bot commands: %s", type(exc).__name__)
+    return True
 
 
 def load_settings(env: dict[str, str] | None = None, dotenv_path: Path | None = None) -> Settings:
@@ -113,11 +137,50 @@ def load_settings(env: dict[str, str] | None = None, dotenv_path: Path | None = 
         raise ConfigError("WEBAPP_URL must be an HTTPS URL with a host") from exc
     if not valid_webapp_url:
         raise ConfigError("WEBAPP_URL must be an HTTPS URL with a host")
+
+    panel_url = values.get("PANEL_URL", "")
+    if panel_url:
+        panel_url_error = "PANEL_URL must be an HTTPS URL with a host, no whitespace, and a valid port if specified"
+        if any(character.isspace() for character in panel_url):
+            raise ConfigError(panel_url_error)
+        try:
+            parsed = urlparse(panel_url)
+            _ = parsed.port  # Access validates the port syntax and range.
+        except ValueError as exc:
+            raise ConfigError(panel_url_error) from exc
+        if parsed.scheme != "https" or not _is_valid_panel_host(parsed.hostname):
+            raise ConfigError(panel_url_error)
+
+    viewer_ids: frozenset[int] = frozenset()
+    raw_viewer_ids = values.get("STATS_VIEWER_IDS", "").strip()
+    if raw_viewer_ids:
+        viewer_error = "STATS_VIEWER_IDS must be comma-separated positive integers"
+        items = [item.strip() for item in raw_viewer_ids.removesuffix(",").split(",")]
+        if not all(item.isdecimal() for item in items):
+            raise ConfigError(viewer_error)
+        try:
+            viewer_ids = frozenset(int(item) for item in items)
+        except ValueError as exc:
+            raise ConfigError(viewer_error) from exc
+        if 0 in viewer_ids:
+            raise ConfigError(viewer_error)
+
+    port_error = f"PANEL_PORT must be an integer between {MIN_PANEL_PORT} and {MAX_PANEL_PORT}"
+    try:
+        panel_port = int(values.get("PANEL_PORT", str(DEFAULT_PANEL_PORT)))
+    except ValueError as exc:
+        raise ConfigError(port_error) from exc
+    if not MIN_PANEL_PORT <= panel_port <= MAX_PANEL_PORT:
+        raise ConfigError(port_error)
+
     raw_db_path = values.get("DB_PATH", "").strip()
     db_path = Path(raw_db_path) if raw_db_path else DEFAULT_DB_PATH
     if not db_path.is_absolute():
         db_path = BOT_DIR / db_path
-    return Settings(token, admin_chat_id, webapp_url, db_path)
+    return Settings(
+        token, admin_chat_id, webapp_url, db_path,
+        viewer_ids=viewer_ids, panel_url=panel_url, panel_port=panel_port,
+    )
 
 
 def webapp_url(settings: Settings, source: str | None = None) -> str:
@@ -260,15 +323,20 @@ class BotHandlers:
             await asyncio.sleep(catalog.RETRY_INTERVAL_SECONDS)
             await self.retry_undelivered_once(bot)
 
+    def _can_view(self, chat: Chat) -> bool:
+        return chat.id == self.settings.admin_chat_id or (
+            getattr(chat, "type", None) == "private" and chat.id in self.settings.viewer_ids
+        )
+
     async def export(self, message: Message) -> None:
-        if message.chat.id != self.settings.admin_chat_id:
+        if not self._can_view(message.chat):
             return
         data = await self.storage.export_csv()
         filename = f"leads_{datetime.now(timezone.utc):%Y%m%d}.csv"
         await message.answer_document(BufferedInputFile(data, filename=filename))
 
     async def statistics(self, message: Message) -> None:
-        if message.chat.id != self.settings.admin_chat_id:
+        if not self._can_view(message.chat):
             return
         now_utc = datetime.now(timezone.utc)
         rows = await self.storage.rows_since(now_utc - timedelta(days=STATS_DAYS))
@@ -286,7 +354,7 @@ class BotHandlers:
         )
 
     async def admin_menu(self, message: Message) -> None:
-        if message.chat.id != self.settings.admin_chat_id:
+        if not self._can_view(message.chat):
             return
         try:
             try:
@@ -321,16 +389,12 @@ class BotHandlers:
         return None
 
     async def admin_callback(self, callback: CallbackQuery) -> None:
-        message = callback.message
-        if isinstance(message, InaccessibleMessage) or (
-            message is not None and message.chat.id != self.settings.admin_chat_id
-        ):
-            message = None
         try:
             await callback.answer()
         except (TelegramAPIError, ClientDecodeError) as exc:
             logger.error("Could not answer admin panel callback: %s", type(exc).__name__)
-        if message is None:
+        message = callback.message
+        if message is None or isinstance(message, InaccessibleMessage) or not self._can_view(message.chat):
             return
         try:
             try:

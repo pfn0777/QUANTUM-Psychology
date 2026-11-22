@@ -4,10 +4,10 @@ import asyncio
 import json
 from contextlib import nullcontext
 from datetime import datetime, timedelta, timezone
-from dataclasses import dataclass
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, call
 
 import pytest
 from aiogram.enums import ParseMode
@@ -34,6 +34,8 @@ from texts import t
 
 
 ADMIN_CHAT_ID = -100123
+VIEWER_ID = 111
+OTHER_VIEWER_ID = 222
 WEBAPP_URL = "https://example.org/app"
 EVENT_TIMEOUT_SECONDS = 1
 PAYLOAD = {
@@ -52,16 +54,11 @@ PAYLOAD = {
 }
 
 
-@dataclass
-class FakeChat:
-    id: int
-
-
 class FakeMessage:
-    def __init__(self, user, *, text=None, data=None, chat_id=1, photo_error=None):
+    def __init__(self, user, *, text=None, data=None, chat_id=1, chat_type="private", photo_error=None):
         self.from_user = user
         self.text = text
-        self.chat = FakeChat(chat_id)
+        self.chat = Chat(id=chat_id, type=chat_type)
         self.web_app_data = SimpleNamespace(data=data) if data is not None else None
         self.answers = []
         self.photos = []
@@ -98,10 +95,6 @@ class FakeBot:
     def __init__(self, fail=False):
         self.fail = fail
         self.sent = []
-        self.command_calls = []
-
-    async def set_my_commands(self, commands, *, scope):
-        self.command_calls.append((commands, scope))
 
     async def send_message(self, chat_id, text, **kwargs):
         if self.fail:
@@ -124,28 +117,44 @@ def payload(**changes):
     return json.dumps(PAYLOAD | changes, ensure_ascii=False)
 
 
-@pytest.mark.parametrize(
-    ("values", "expected"),
-    [
-        ({"ADMIN_CHAT_ID": "1", "WEBAPP_URL": WEBAPP_URL}, "BOT_TOKEN"),
-        ({"BOT_TOKEN": "token", "ADMIN_CHAT_ID": "x", "WEBAPP_URL": WEBAPP_URL}, "ADMIN_CHAT_ID"),
-        ({"BOT_TOKEN": "token", "ADMIN_CHAT_ID": "-1", "WEBAPP_URL": "http://example.org"}, "WEBAPP_URL"),
-        ({"BOT_TOKEN": "token", "ADMIN_CHAT_ID": "-1", "WEBAPP_URL": "https://"}, "WEBAPP_URL"),
-    ],
-)
-def test_invalid_settings(tmp_path: Path, values: dict, expected: str):
+@pytest.mark.parametrize("overrides, expected", [
+    ({}, "BOT_TOKEN"),
+    ({"ADMIN_CHAT_ID": "x"}, "ADMIN_CHAT_ID"),
+    *[({"WEBAPP_URL": value}, "WEBAPP_URL") for value in ("http://example.org", "https://")],
+    *[({"STATS_VIEWER_IDS": value}, "^STATS_VIEWER_IDS must be comma-separated positive integers$")
+      for value in ("abc", "0", "-5", "111,,222")],
+    *[({"PANEL_URL": value}, "PANEL_URL") for value in (
+        "http://example.org", "https://", "https://exa mple.org", "https://example.org:bogus",
+        " https://example.org", "https://example.org/\npath", "https://exa<mple.org", "https://.",
+        "https://example..org", "https://-bad.example.org")],
+    *[({"PANEL_PORT": value}, "PANEL_PORT") for value in ("x", "0", "65536")],
+])
+def test_invalid_settings(tmp_path: Path, overrides: dict[str, str], expected: str):
+    values = {"ADMIN_CHAT_ID": "-1", "WEBAPP_URL": WEBAPP_URL}
+    if overrides:
+        values.update({"BOT_TOKEN": "token", **overrides})
     with pytest.raises(ConfigError, match=expected):
-        load_settings(values, tmp_path / "missing.env")
+        load_settings(values, tmp_path / "missing.example")
 
 
-def test_dotenv_and_environment_override(tmp_path: Path):
-    path = tmp_path / "test.env"
+@pytest.mark.parametrize("viewer_ids, panel_url", [
+    ("111, 222", "https://panel.example.org"), ("111,222,", "https://panel.example.org:8443/path"),
+    ("", "https://192.0.2.1"), (None, ""),
+])
+def test_dotenv_and_environment_override(tmp_path: Path, viewer_ids: str | None, panel_url: str):
+    path = tmp_path / "test.example"
     path.write_text("BOT_TOKEN=from_file\nADMIN_CHAT_ID=-42\nWEBAPP_URL=https://example.org\n", encoding="utf-8")
-    settings = load_settings({"BOT_TOKEN": "from_env"}, path)
+    env = {"BOT_TOKEN": "from_env"}
+    if viewer_ids is not None:
+        env.update(STATS_VIEWER_IDS=viewer_ids, PANEL_URL=panel_url, PANEL_PORT="65535")
+    settings = load_settings(env, path)
     assert settings.token == "from_env"
     assert settings.admin_chat_id == -42
-    assert settings.db_path.name == "leads.db"
-    assert settings.db_path.parent.name == "data"
+    assert settings.db_path == bot_module.BOT_DIR / "data" / "leads.db"
+    assert settings.viewer_ids == (frozenset({VIEWER_ID, OTHER_VIEWER_ID}) if viewer_ids else frozenset())
+    assert isinstance(settings.viewer_ids, frozenset)
+    assert settings.panel_url == panel_url
+    assert settings.panel_port == (65535 if viewer_ids is not None else 8090)
 
 
 def test_main_reports_config_error_without_traceback(monkeypatch, capsys):
@@ -159,39 +168,24 @@ def test_main_reports_config_error_without_traceback(monkeypatch, capsys):
     assert output.err == ""
 
 
-@pytest.mark.asyncio
-async def test_setup_commands_registers_default_and_admin_scopes(tmp_path: Path):
-    bot = FakeBot()
-    settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_path / "unused.db")
-
-    await bot_module.setup_commands(bot, settings)
-
-    assert len(bot.command_calls) == 2
-    user_commands, default_scope = bot.command_calls[0]
-    admin_commands, chat_scope = bot.command_calls[1]
-    assert isinstance(default_scope, BotCommandScopeDefault)
+@pytest.mark.parametrize("viewer_ids, failure_count", [
+    ((), 0), ((), 2), ((VIEWER_ID, OTHER_VIEWER_ID), 0), ((VIEWER_ID, OTHER_VIEWER_ID), 3),
+])
+async def test_setup_commands_registers_scopes_even_after_errors(tmp_db_path, caplog, viewer_ids, failure_count):
+    set_commands = AsyncMock(side_effect=[RuntimeError] * failure_count + [None] * (2 + len(viewer_ids)))
+    settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_db_path, viewer_ids=frozenset(viewer_ids))
+    await bot_module.setup_commands(SimpleNamespace(set_my_commands=set_commands), settings)
+    user_commands, admin_commands = bot_module.user_commands(), bot_module.admin_commands()
+    assert set_commands.await_count == 2 + len(viewer_ids)
+    assert set_commands.await_args_list[0] == call(user_commands, scope=BotCommandScopeDefault())
+    assert set_commands.await_args_list[1] == call(admin_commands, scope=BotCommandScopeChat(chat_id=ADMIN_CHAT_ID))
+    for viewer_id in settings.viewer_ids:
+        assert call(admin_commands, scope=BotCommandScopeChat(chat_id=viewer_id)) in set_commands.await_args_list[2:]
     assert [command.command for command in user_commands] == ["start"]
-    assert isinstance(chat_scope, BotCommandScopeChat)
-    assert chat_scope.chat_id == ADMIN_CHAT_ID
     assert [command.command for command in admin_commands] == ["admin", "start", "stats", "export"]
     assert admin_commands[0].description == t("cmd_admin")
     assert all(command.description for command in user_commands + admin_commands)
-
-
-@pytest.mark.asyncio
-async def test_setup_commands_logs_errors_without_raising(tmp_path: Path, caplog):
-    class FailingCommandBot(FakeBot):
-        async def set_my_commands(self, commands, *, scope):
-            await super().set_my_commands(commands, scope=scope)
-            raise RuntimeError("Telegram unavailable")
-
-    bot = FailingCommandBot()
-    settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_path / "unused.db")
-
-    await bot_module.setup_commands(bot, settings)
-
-    assert len(bot.command_calls) == 2
-    assert caplog.text.count("Could not set bot commands: RuntimeError") == 2
+    assert caplog.text.count("Could not set bot commands: RuntimeError") == failure_count
 
 
 @pytest.mark.asyncio
@@ -499,42 +493,49 @@ async def test_rejected_age_uses_latin(configured, fake_user_factory):
     assert await storage.all_rows() == []
 
 
-@pytest.mark.asyncio
-async def test_admin_commands_only_in_admin_chat(configured, fake_user_factory):
-    handlers, storage = configured
-    user = fake_user_factory()
-    await handlers.web_app_data(FakeMessage(user, data=payload()), FakeBot())
-    admin_export = FakeMessage(user, text="/export", chat_id=ADMIN_CHAT_ID)
-    await handlers.export(admin_export)
-    assert isinstance(admin_export.documents[0][0], BufferedInputFile)
-    assert admin_export.documents[0][0].data.startswith(b"\xef\xbb\xbf")
-    admin_stats = FakeMessage(user, text="/stats", chat_id=ADMIN_CHAT_ID)
-    await handlers.statistics(admin_stats)
-    assert "Жами: 1" in admin_stats.answers[0][0]
-    foreign = FakeMessage(user, text="/export", chat_id=99)
-    await handlers.export(foreign)
-    await handlers.statistics(foreign)
-    assert foreign.answers == [] and foreign.documents == []
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("chat_id", [ADMIN_CHAT_ID, 99])
-async def test_admin_menu_permissions(configured, monkeypatch, chat_id):
+async def test_admin_menu_counts_empty_database_once(configured, monkeypatch):
     handlers, storage = configured
     count_users = AsyncMock(wraps=storage.count_users)
     monkeypatch.setattr(storage, "count_users", count_users)
-    message = FakeMessage(None, text="/admin", chat_id=chat_id)
-
+    message = FakeMessage(None, text="/admin", chat_id=ADMIN_CHAT_ID)
     await handlers.admin_menu(message)
+    count_users.assert_awaited_once_with()
+    [(content, options)] = message.answers
+    assert content.startswith("<b>Админ панел</b>\nФойдаланувчилар: 0\n")
+    assert options == {"parse_mode": ParseMode.HTML, "reply_markup": admin_panel.panel_keyboard()}
 
-    if chat_id == ADMIN_CHAT_ID:
-        count_users.assert_awaited_once_with()
-        [(content, options)] = message.answers
-        assert content.startswith("<b>Админ панел</b>\nФойдаланувчилар: 0\n")
-        assert options == {"parse_mode": ParseMode.HTML, "reply_markup": admin_panel.panel_keyboard()}
-    else:
+
+@pytest.mark.parametrize("chat_id, chat_type, allowed", [
+    (ADMIN_CHAT_ID, "group", True), (VIEWER_ID, "private", True),
+    (VIEWER_ID, "group", False), (99, "private", False),
+])
+async def test_admin_commands_and_callback_chat_permissions(configured, fake_user_factory, monkeypatch,
+                                                            chat_id, chat_type, allowed):
+    handlers, storage = configured
+    handlers.settings = replace(handlers.settings, viewer_ids=frozenset({VIEWER_ID}))
+    bot = FakeBot()
+    await handlers.web_app_data(FakeMessage(fake_user_factory(), data=payload()), bot)
+    assert [destination for destination, _, _ in bot.sent] == [ADMIN_CHAT_ID]
+    count_users = AsyncMock(wraps=storage.count_users)
+    monkeypatch.setattr(storage, "count_users", count_users)
+    message = FakeMessage(None, chat_id=chat_id, chat_type=chat_type)
+    callback = FakeCallback(admin_panel.CB_OVERVIEW, message)
+    await handlers.statistics(message)
+    await handlers.export(message)
+    await handlers.admin_menu(message)
+    await handlers.admin_callback(callback)
+    callback.answer.assert_awaited_once_with()
+    if not allowed:
         count_users.assert_not_awaited()
-        assert message.answers == []
+        assert message.answers == message.documents == message.edits == []
+        return
+    [(report, _), (overview, options)] = message.answers
+    [(document, _)] = message.documents
+    assert "Жами: 1" in report
+    assert isinstance(document, BufferedInputFile) and document.data.startswith(b"\xef\xbb\xbf")
+    assert overview.startswith("<b>Админ панел</b>\nФойдаланувчилар: 1\n")
+    assert options == {"parse_mode": ParseMode.HTML, "reply_markup": admin_panel.panel_keyboard()}
+    assert message.edits == [(overview, options)]
 
 
 @pytest.mark.asyncio
@@ -576,13 +577,10 @@ async def test_admin_callback_edits_report(configured, monkeypatch, data, headin
     callback.answer.assert_awaited_once_with()
 
 
-@pytest.mark.parametrize(
-    "data, export_name, filename_prefix",
-    [
-        (admin_panel.CB_CSV_LEADS, "export_csv", "leads"),
-        (admin_panel.CB_CSV_USERS, "export_users_csv", "users"),
-    ],
-)
+@pytest.mark.parametrize("data, export_name, filename_prefix", [
+    (admin_panel.CB_CSV_LEADS, "export_csv", "leads"),
+    (admin_panel.CB_CSV_USERS, "export_users_csv", "users"),
+])
 async def test_admin_callback_sends_csv(configured, monkeypatch, data, export_name, filename_prefix):
     handlers, storage = configured
     csv_data = b"csv data\n"
@@ -607,19 +605,17 @@ async def test_admin_callback_sends_csv(configured, monkeypatch, data, export_na
     callback.answer.assert_awaited_once_with()
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "data, message",
-    [
-        (admin_panel.CB_CSV_USERS, FakeMessage(None, chat_id=99)),
-        (admin_panel.CB_OVERVIEW, FakeMessage(None, chat_id=99)),
-        (admin_panel.CB_OVERVIEW, None),
-        (admin_panel.CB_OVERVIEW, InaccessibleMessage(chat=Chat(id=ADMIN_CHAT_ID, type="group"), message_id=1, date=0)),
-        ("adm:unknown", FakeMessage(None, chat_id=ADMIN_CHAT_ID)),
-    ],
-)
+@pytest.mark.parametrize("data, message", [
+    (admin_panel.CB_CSV_USERS, FakeMessage(None, chat_id=99)),
+    (admin_panel.CB_OVERVIEW, FakeMessage(None, chat_id=99)),
+    (admin_panel.CB_OVERVIEW, None),
+    (admin_panel.CB_OVERVIEW, SimpleNamespace(chat=SimpleNamespace(id=VIEWER_ID))),
+    (admin_panel.CB_OVERVIEW, InaccessibleMessage(chat=Chat(id=ADMIN_CHAT_ID, type="group"), message_id=1, date=0)),
+    ("adm:unknown", FakeMessage(None, chat_id=ADMIN_CHAT_ID)),
+])
 async def test_admin_callback_ignored_updates_only_answer(configured, monkeypatch, data, message):
     handlers, storage = configured
+    handlers.settings = replace(handlers.settings, viewer_ids=frozenset({VIEWER_ID}))
     export = AsyncMock()
     count_users = AsyncMock()
     monkeypatch.setattr(storage, "export_users_csv", export)
@@ -651,74 +647,42 @@ async def test_admin_callback_accepts_unchanged_message(configured, monkeypatch,
     callback.answer.assert_awaited_once_with()
 
 
-@pytest.mark.parametrize(
-    "data, read_name, failing_send",
-    [(None, "count_users", None), (admin_panel.CB_CSV_USERS, "export_users_csv", None),
-     (None, None, "answer"), (None, "count_users", "answer"),
-     (admin_panel.CB_OVERVIEW, None, "edit_text"), (admin_panel.CB_OVERVIEW, "count_users", "answer"),
-     (admin_panel.CB_CSV_USERS, None, "answer_document")],
-)
-async def test_admin_read_and_transport_errors(configured, monkeypatch, caplog, data, read_name, failing_send):
+@pytest.mark.parametrize("error_type", [TelegramNetworkError, ClientDecodeError])
+@pytest.mark.parametrize("data, read_name, failing_send", [
+    (None, "count_users", None), (admin_panel.CB_CSV_USERS, "export_users_csv", None),
+    (None, None, "answer"), (None, "count_users", "answer"),
+    (admin_panel.CB_OVERVIEW, None, "edit_text"), (admin_panel.CB_OVERVIEW, "count_users", "answer"),
+    (admin_panel.CB_CSV_USERS, None, "answer_document"), (admin_panel.CB_OVERVIEW, None, "callback.answer"),
+])
+async def test_admin_read_and_transport_errors(configured, monkeypatch, caplog, data, read_name, failing_send, error_type):
     handlers, storage = configured
     message = FakeMessage(None, chat_id=ADMIN_CHAT_ID)
+    callback = FakeCallback(data, message)
     if read_name:
         monkeypatch.setattr(storage, read_name, AsyncMock(side_effect=RuntimeError("database unavailable")))
     if failing_send:
-        error = TelegramNetworkError(EditMessageText(text="panel"), "https://example.invalid/bot-synthetic-credential/request")
+        if error_type is ClientDecodeError:
+            error = ClientDecodeError("synthetic-error-message", ValueError("Invalid response"), "synthetic-error-body")
+        else:
+            error = TelegramNetworkError(EditMessageText(text="panel"), "https://example.invalid/synthetic-error")
         send = AsyncMock(side_effect=error)
-        monkeypatch.setattr(message, failing_send, send)
+        target, method = (callback, "answer") if failing_send == "callback.answer" else (message, failing_send)
+        monkeypatch.setattr(target, method, send)
     if data is None:
         await handlers.admin_menu(message)
     else:
-        callback = FakeCallback(data, message)
         await handlers.admin_callback(callback)
         callback.answer.assert_awaited_once_with()
 
     if failing_send:
         send.assert_awaited_once()
-        assert "TelegramNetworkError" in caplog.text and "synthetic-credential" not in caplog.text
+        assert error_type.__name__ in caplog.text and "synthetic-error" not in caplog.text
         assert all(record.exc_info is None for record in caplog.records)
-    assert message.answers == ([] if failing_send else [(t("admin_read_error"), {})])
-    assert message.edits == message.documents == []
+    assert message.answers == ([(t("admin_read_error"), {})] if read_name and not failing_send else [])
+    assert len(message.edits) == int(failing_send == "callback.answer")
+    assert message.documents == []
     if read_name:
         assert "Could not read admin panel data: RuntimeError" in caplog.text
-
-
-@pytest.mark.parametrize(
-    "data, failing_send",
-    [
-        (None, "answer"),
-        (admin_panel.CB_OVERVIEW, "callback.answer"),
-        (admin_panel.CB_OVERVIEW, "edit_text"),
-        (admin_panel.CB_CSV_USERS, "answer_document"),
-    ],
-)
-async def test_admin_decode_error_logs_only_exception_type(configured, monkeypatch, caplog, data, failing_send):
-    handlers, _ = configured
-    message = FakeMessage(None, chat_id=ADMIN_CHAT_ID)
-    callback = FakeCallback(data, message)
-    fake_message = "token=synthetic-decode-message"
-    fake_body = "token=synthetic-response-body"
-    error = ClientDecodeError(fake_message, ValueError("Invalid response"), fake_body)
-    send = AsyncMock(side_effect=error)
-    if failing_send == "callback.answer":
-        callback.answer = send
-    else:
-        monkeypatch.setattr(message, failing_send, send)
-
-    if data is None:
-        await handlers.admin_menu(message)
-    else:
-        await handlers.admin_callback(callback)
-        callback.answer.assert_awaited_once_with()
-
-    send.assert_awaited_once()
-    if failing_send == "callback.answer":
-        assert len(message.edits) == 1
-    assert "ClientDecodeError" in caplog.text
-    assert fake_message not in caplog.text
-    assert fake_body not in caplog.text
-    assert all(record.exc_info is None for record in caplog.records)
 
 
 @pytest.mark.asyncio
