@@ -93,6 +93,29 @@ Botga `/start` yuborilganda Mini App'ni uning javob klaviaturasidagi tugma orqal
 
 `/export` administratorga arizalarni CSV ko'rinishida beradi. `/stats` oxirgi 7 va 30 kun statistikalarini chiqaradi. Bu buyruqlar faqat `ADMIN_CHAT_ID` bilan mos chatda ishlaydi.
 
+## Admin panel
+
+Panel botga ulangach, `/admin` faqat `ADMIN_CHAT_ID` bilan mos chatda ishlaydi va shu chatning buyruqlar menyusida ko'rinadi.
+
+Panelda jami foydalanuvchilar, bugun hamda oxirgi 7 va 30 kunda qo'shilganlar, oxirgi 7 kunda faol bo'lganlar, ariza qoldirgan foydalanuvchilar soni va ularning jami foydalanuvchilardagi ulushi (konversiya) ko'rsatiladi. Arizalar soni bugun hamda oxirgi 7 va 30 kun uchun beriladi. Yetkazilmagan arizalar soni ham ko'rsatiladi. Bugungi hisob va kunlik dinamika Toshkent vaqti (UTC+5) bo'yicha yuritiladi.
+
+- **Фойдаланувчилар** — oxirgi 30 kunda qo'shilgan foydalanuvchilar soni manbalar bo'yicha
+- **Аризалар** — arizalar statistikasi
+- **14 кунлик динамика** — oxirgi 14 kunning har biri uchun yangi foydalanuvchilar va arizalar soni
+- **Аризалар CSV** — arizalarni yuklab olish
+- **Фойдаланувчилар CSV** — foydalanuvchilarni yuklab olish
+- **Янгилаш** — panelni yangilash
+
+Botda `/start` bosgan yoki Mini App orqali arizani muvaffaqiyatli yuborgan foydalanuvchi ro'yxatga qo'shiladi. Bot ishga tushganda `users` jadvali avtomatik yaratiladi va avvalgi arizalardan foydalanuvchilar tiklanadi. Avval ariza qoldirmaganlar panel ulangach, keyingi `/start` bosishida ro'yxatga qo'shiladi.
+
+Yangilangan botni serverga chiqarishdan oldin `leads.db` bazasining zaxira nusxasini oling. Bot to'xtatilgan paytda baza joylashgan papkada quyidagi buyruqni bajaring. `YYYYMMDD` o'rniga nusxa olingan sanani yozing. `DB_PATH` da boshqa fayl nomi berilgan bo'lsa, buyruqni moslang.
+
+```bash
+cp leads.db leads.db.bak-YYYYMMDD
+```
+
 ## Shaxsiy ma'lumotlar
 
 Arizalarda ism, telefon va boshqa shaxsiy ma'lumotlar bor. Ularni himoyalang, kirishni cheklang va saqlash muddatini belgilang. O'zbekiston fuqarolarining shaxsiy ma'lumotlarini O'zbekiston hududidagi serverda saqlash talabi qo'llanishini tekshiring; server joylashuvi va huquqiy muvofiqlik haqidagi yakuniy qarorni loyiha egasi qabul qiladi.
+
+Foydalanuvchilar CSV faylida ham shaxsiy ma'lumotlar bor. Panel ulangach, fayl faqat administrator chatida yuklab olinadi.
