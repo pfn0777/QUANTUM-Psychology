@@ -140,9 +140,34 @@ def test_digit_string_age() -> None:
     assert result.age == 25
 
 
-@pytest.mark.parametrize("phone", ["12345678", "1234567890123456", 123456789])
+@pytest.mark.parametrize(
+    "phone",
+    [
+        "12345678", "1234567890123456", 123456789, "+998 90 123 4", "+998 90 123 45 678",
+        "90123456", "79123456789", "+1234567", "+1234567890123456",
+    ],
+)
 def test_invalid_phone(phone: object) -> None:
     assert parse(phone=phone) == Rejected("err_phone", "cyr")
+
+
+@pytest.mark.parametrize(
+    "phone,expected",
+    [
+        ("+998 90 123 45 67", "+998901234567"),
+        ("+998 (90) 123-45-67", "+998901234567"),
+        ("+7 912 345 67 89", "+79123456789"),
+        ("+90 532 123 45 67", "+905321234567"),
+        ("901234567", "+998901234567"),
+        ("998901234567", "+998901234567"),
+        ("+123 456 789", "+123456789"),
+        ("+" + "1" * 15, "+" + "1" * 15),
+    ],
+)
+def test_valid_phone_normalization(phone: str, expected: str) -> None:
+    result = parse(phone=phone)
+    assert isinstance(result, Lead)
+    assert result.phone == expected
 
 
 @pytest.mark.parametrize(

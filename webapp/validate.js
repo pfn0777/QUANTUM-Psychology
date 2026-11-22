@@ -18,6 +18,8 @@ const CODES = {
 const DEEP_LINK_CODES = new Set(DEEP_LINK_SOURCES);
 const PAYLOAD_VERSION = 1;
 const UZBEKISTAN_PHONE_PREFIX = "998";
+const UZ_NATIONAL_DIGITS = LIMITS.phoneMinDigits;
+const UZ_FULL_DIGITS = UZBEKISTAN_PHONE_PREFIX.length + UZ_NATIONAL_DIGITS;
 
 function isNameLetter(character) {
   return LATIN_LETTER.test(character) ||
@@ -33,11 +35,14 @@ export function normalizePhone(value) {
   if (typeof value !== "string") return "";
   const input = stripPythonWhitespace(value);
   const digits = (input.match(DIGIT) ?? []).join("");
-  if (
-    digits.length === UZBEKISTAN_PHONE_PREFIX.length + LIMITS.phoneMinDigits &&
-    digits.startsWith(UZBEKISTAN_PHONE_PREFIX)
-  ) return `+${digits}`;
-  return `${input.startsWith("+") ? "+" : ""}${digits}`;
+  const isUz = digits.startsWith(UZBEKISTAN_PHONE_PREFIX);
+  if (input.startsWith("+")) {
+    if (isUz) return digits.length === UZ_FULL_DIGITS ? `+${digits}` : "";
+    return digits.length >= LIMITS.phoneMinDigits && digits.length <= LIMITS.phoneMaxDigits ? `+${digits}` : "";
+  }
+  if (digits.length === UZ_NATIONAL_DIGITS) return `+${UZBEKISTAN_PHONE_PREFIX}${digits}`;
+  if (digits.length === UZ_FULL_DIGITS && isUz) return `+${digits}`;
+  return "";
 }
 
 export function payloadBytes(payload) {
@@ -65,8 +70,7 @@ export function validateLead(form, script) {
   if (!Number.isInteger(age) || age < LIMITS.ageMin || age > LIMITS.ageMax) errors.age = "err_age";
 
   const phone = normalizePhone(fields.phone);
-  const phoneDigits = (phone.match(DIGIT) ?? []).length;
-  if (phoneDigits < LIMITS.phoneMinDigits || phoneDigits > LIMITS.phoneMaxDigits) errors.phone = "err_phone";
+  if (!phone) errors.phone = "err_phone";
 
   for (const field of ["region", "prior", "call_time"]) {
     if (!CODES[field].has(fields[field])) errors[field] = `err_${field}`;

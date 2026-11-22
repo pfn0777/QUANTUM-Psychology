@@ -29,6 +29,8 @@ from catalog import (
 
 PAYLOAD_VERSION = 1
 UZBEKISTAN_PHONE_PREFIX = "998"
+UZ_NATIONAL_DIGITS = PHONE_MIN_DIGITS
+UZ_FULL_DIGITS = len(UZBEKISTAN_PHONE_PREFIX) + UZ_NATIONAL_DIGITS
 TASHKENT_UTC_OFFSET_HOURS = 5
 TASHKENT = timezone(timedelta(hours=TASHKENT_UTC_OFFSET_HOURS))
 NAME_PUNCTUATION = frozenset("ʻ‘’'ʼ- ")
@@ -89,11 +91,16 @@ def _valid_phone(value: object) -> str | None:
         return None
     phone = value.strip()
     digits = "".join(char for char in phone if "0" <= char <= "9")
-    if not PHONE_MIN_DIGITS <= len(digits) <= PHONE_MAX_DIGITS:
-        return None
-    if len(digits) == len(UZBEKISTAN_PHONE_PREFIX) + PHONE_MIN_DIGITS and digits.startswith(UZBEKISTAN_PHONE_PREFIX):
+    is_uz = digits.startswith(UZBEKISTAN_PHONE_PREFIX)
+    if phone.startswith("+"):
+        if is_uz:
+            return "+" + digits if len(digits) == UZ_FULL_DIGITS else None
+        return "+" + digits if PHONE_MIN_DIGITS <= len(digits) <= PHONE_MAX_DIGITS else None
+    if len(digits) == UZ_NATIONAL_DIGITS:
+        return "+" + UZBEKISTAN_PHONE_PREFIX + digits
+    if len(digits) == UZ_FULL_DIGITS and is_uz:
         return "+" + digits
-    return ("+" if phone.startswith("+") else "") + digits
+    return None
 
 
 def _reject_json_constant(value: str) -> None:

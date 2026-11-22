@@ -59,24 +59,40 @@ for (const age of [LIMITS.ageMin - 1, LIMITS.ageMax + 1, "abc", " 34 ", 25.5, tr
   });
 }
 
-for (const phone of ["12345678", "1234567890123456"]) {
+const INVALID_PHONES = [
+  "12345678", "1234567890123456", "+998 90 123 4", "+998 90 123 45 678",
+  "90123456", "79123456789", "+1234567", "+1234567890123456",
+];
+for (const phone of INVALID_PHONES) {
   test(`rejects invalid phone ${phone}`, () => {
+    assert.equal(normalizePhone(phone), "");
     assert.equal(validateLead(validForm({ phone }), "cyr").errors.phone, "err_phone");
   });
 }
 
-test("normalizes masked phones and preserves non-998 leading plus", () => {
-  assert.equal(normalizePhone("+998 (90) 123-45-67"), "+998901234567");
-  assert.equal(normalizePhone("998 90 123 45 67"), "+998901234567");
-  assert.equal(normalizePhone("+123 456 789"), "+123456789");
-  assert.equal(normalizePhone("123 456 789"), "123456789");
-});
+const VALID_PHONES = [
+  ["+998 90 123 45 67", "+998901234567"],
+  ["+998 (90) 123-45-67", "+998901234567"],
+  ["+7 912 345 67 89", "+79123456789"],
+  ["+90 532 123 45 67", "+905321234567"],
+  ["901234567", "+998901234567"],
+  ["998901234567", "+998901234567"],
+  ["998 90 123 45 67", "+998901234567"],
+  ["+123 456 789", "+123456789"],
+];
+for (const [input, expected] of VALID_PHONES) {
+  test(`normalizes phone ${input}`, () => {
+    assert.equal(normalizePhone(input), expected);
+    assert.equal(validateLead(validForm({ phone: input }), "cyr").payload.phone, expected);
+  });
+}
 
 test("phone strips U+0085 but retains U+FEFF like Python", () => {
   assert.equal(normalizePhone("\u0085+123456789\u0085"), "+123456789");
-  assert.equal(normalizePhone("\ufeff+123456789\ufeff"), "123456789");
+  // U+FEFF is not whitespace, so the plus is no longer leading: 9 digits become a UZ national number.
+  assert.equal(normalizePhone("\ufeff+123456789\ufeff"), "+998123456789");
   assert.equal(validateLead(validForm({ phone: "\u0085+123456789\u0085" }), "lat").payload.phone, "+123456789");
-  assert.equal(validateLead(validForm({ phone: "\ufeff+123456789\ufeff" }), "lat").payload.phone, "123456789");
+  assert.equal(validateLead(validForm({ phone: "\ufeff+123456789\ufeff" }), "lat").payload.phone, "+998123456789");
 });
 
 for (const field of ["region", "prior", "call_time", "source"]) {
@@ -138,7 +154,7 @@ test("maximum-length valid payload fits Telegram's UTF-8 limit", () => {
   const result = validateLead(validForm({
     name: "Ў".repeat(LIMITS.nameMax),
     age: LIMITS.ageMax,
-    phone: "9".repeat(LIMITS.phoneMaxDigits),
+    phone: "+" + "9".repeat(LIMITS.phoneMaxDigits - 1) + "1",
     region: REGIONS.at(-1).code,
     topics: TOPICS.map(({ code }) => code),
     prior: PRIOR.at(-1).code,
