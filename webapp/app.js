@@ -3,16 +3,12 @@ import {
   CLOSING, REGIONS, TOPICS, PRIOR, CALL_TIMES, SOURCES, DEEP_LINK_SOURCES, LIMITS,
 } from "./data.js";
 import { t } from "./i18n.js";
-import { payloadBytes, validateLead } from "./validate.js";
+import { formatPhone, payloadBytes, validateLead } from "./validate.js";
 import { canSendToBot } from "./telegram.js";
 
 const STORAGE_KEY = "qp_script";
 const DEFAULT_SCRIPT = "cyr";
 const LATIN_SCRIPT = "lat";
-const PHONE_COUNTRY_CODE = "998";
-const PHONE_PREFIX = `+${PHONE_COUNTRY_CODE} `;
-const PHONE_GROUPS = [2, 3, 2, 2];
-const NATIONAL_PHONE_DIGITS = PHONE_GROUPS.reduce((sum, count) => sum + count, 0);
 const MODULE_NUMBER_WIDTH = 2;
 const SUBMIT_FALLBACK_MS = 900;
 const tg = window.Telegram?.WebApp;
@@ -195,24 +191,6 @@ function render() {
   renderErrors();
   updateCommentCounter();
   updateSubmitButton();
-}
-
-function formatPhone(value) {
-  const entered = value.replace(/\D/gu, "");
-  if (!entered) return value.startsWith("+") ? "+" : "";
-  if (value.startsWith("+") && entered && PHONE_COUNTRY_CODE.startsWith(entered) &&
-      entered.length < PHONE_COUNTRY_CODE.length) return `+${entered}`;
-  const digits = (entered.startsWith(PHONE_COUNTRY_CODE)
-    ? entered.slice(PHONE_COUNTRY_CODE.length)
-    : entered).slice(0, NATIONAL_PHONE_DIGITS);
-  let index = 0;
-  const parts = [];
-  for (const length of PHONE_GROUPS) {
-    const part = digits.slice(index, index + length);
-    if (part) parts.push(part);
-    index += length;
-  }
-  return `${PHONE_PREFIX}${parts.join(" ")}`.trimEnd();
 }
 
 function collectForm() {

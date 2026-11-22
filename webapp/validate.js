@@ -19,7 +19,9 @@ const DEEP_LINK_CODES = new Set(DEEP_LINK_SOURCES);
 const PAYLOAD_VERSION = 1;
 const UZBEKISTAN_PHONE_PREFIX = "998";
 const UZ_NATIONAL_DIGITS = LIMITS.phoneMinDigits;
-const UZ_FULL_DIGITS = UZBEKISTAN_PHONE_PREFIX.length + UZ_NATIONAL_DIGITS;
+const UZ_PHONE_GROUPS = [2, 3, 2, 2];
+const UZ_PHONE_DISPLAY_PREFIX = `+${UZBEKISTAN_PHONE_PREFIX} `;
+const UZ_FULL_DIGITS =UZBEKISTAN_PHONE_PREFIX.length + UZ_NATIONAL_DIGITS;
 
 function isNameLetter(character) {
   return LATIN_LETTER.test(character) ||
@@ -43,6 +45,29 @@ export function normalizePhone(value) {
   if (digits.length === UZ_NATIONAL_DIGITS) return `+${UZBEKISTAN_PHONE_PREFIX}${digits}`;
   if (digits.length === UZ_FULL_DIGITS && isUz) return `+${digits}`;
   return "";
+}
+
+export function formatPhone(value) {
+  const entered = value.replace(/\D/gu, "");
+  const plus = value.startsWith("+");
+  if (!entered) return plus ? "+" : "";
+  if (plus && UZBEKISTAN_PHONE_PREFIX.startsWith(entered) &&
+      entered.length < UZBEKISTAN_PHONE_PREFIX.length) return `+${entered}`;
+  if (plus && !entered.startsWith(UZBEKISTAN_PHONE_PREFIX)) {
+    return `+${entered.slice(0, LIMITS.phoneMaxDigits)}`;
+  }
+  const stripCode = entered.startsWith(UZBEKISTAN_PHONE_PREFIX) &&
+    (plus || entered.length > UZ_NATIONAL_DIGITS);
+  const digits = (stripCode ? entered.slice(UZBEKISTAN_PHONE_PREFIX.length) : entered)
+    .slice(0, UZ_NATIONAL_DIGITS);
+  let index = 0;
+  const parts = [];
+  for (const length of UZ_PHONE_GROUPS) {
+    const part = digits.slice(index, index + length);
+    if (part) parts.push(part);
+    index += length;
+  }
+  return `${UZ_PHONE_DISPLAY_PREFIX}${parts.join(" ")}`.trimEnd();
 }
 
 export function payloadBytes(payload) {

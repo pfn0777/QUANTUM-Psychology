@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { LIMITS, REGIONS, TOPICS, PRIOR, CALL_TIMES, SOURCES } from "../data.js";
-import { validateLead, normalizePhone, payloadBytes } from "../validate.js";
+import { validateLead, normalizePhone, payloadBytes, formatPhone } from "../validate.js";
 
 function validForm(overrides = {}) {
   return {
@@ -165,4 +165,30 @@ test("maximum-length valid payload fits Telegram's UTF-8 limit", () => {
   assert.equal(result.ok, true);
   assert.ok(payloadBytes(result.payload) <= LIMITS.payloadMaxBytes);
   assert.equal(payloadBytes({ comment: "😀" }), new TextEncoder().encode(JSON.stringify({ comment: "😀" })).length);
+});
+
+test("formatPhone keeps foreign numbers ungrouped and capped", () => {
+  assert.equal(formatPhone("+7 912 345 67 89"), "+79123456789");
+  assert.equal(formatPhone("+90 532 123 45 67"), "+905321234567");
+  assert.equal(formatPhone(`+7${"1".repeat(20)}`), `+7${"1".repeat(LIMITS.phoneMaxDigits - 1)}`);
+});
+
+test("formatPhone formats Uzbek numbers and partial input", () => {
+  assert.equal(formatPhone("998887766"), "+998 99 888 77 66");
+  assert.equal(formatPhone("+998 90 123 45 67"), "+998 90 123 45 67");
+  assert.equal(formatPhone("+998901234567"), "+998 90 123 45 67");
+  assert.equal(formatPhone("998901234567"), "+998 90 123 45 67");
+  assert.equal(formatPhone("901234567"), "+998 90 123 45 67");
+  for (const [input, expected] of [["+9", "+9"], ["+99", "+99"], ["+", "+"], ["", ""], ["+998 9", "+998 9"]]) {
+    assert.equal(formatPhone(input), expected);
+  }
+});
+
+test("formatPhone output passes normalizePhone and validateLead", () => {
+  assert.equal(normalizePhone(formatPhone("+998 90 123 45 67")), "+998901234567");
+  assert.equal(normalizePhone(formatPhone("+7 912 345 67 89")), "+79123456789");
+  for (const raw of ["901234567", "+90 532 123 45 67"]) {
+    const result = validateLead(validForm({ phone: formatPhone(raw) }), "lat");
+    assert.equal(result.ok, true);
+  }
 });
