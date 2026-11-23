@@ -91,11 +91,11 @@ Bot `bot/.env` faylini o'zi o'qiydi. systemd unit ichida `EnvironmentFile` ishla
 
 Botga `/start` yuborilganda Mini App'ni uning javob klaviaturasidagi tugma orqali oching. `Telegram.WebApp.sendData` faqat shu reply-keyboard tugmasidan ochilganda botga ma'lumot qaytaradi. Forma yuborilgach, ariza bazaga yozilishi va administrator chatiga kelishi kerak.
 
-`/export` administratorga arizalarni CSV ko'rinishida beradi. `/stats` oxirgi 7 va 30 kun statistikalarini chiqaradi. Bu buyruqlar faqat `ADMIN_CHAT_ID` bilan mos chatda ishlaydi.
+`/export` ruxsat berilgan odamga arizalarni CSV ko'rinishida beradi. `/stats` oxirgi 7 va 30 kun statistikalarini chiqaradi. Ruxsat shartlari quyidagi bo'limda keltirilgan.
 
 ## Admin panel
 
-Panel botga ulangach, `/admin` faqat `ADMIN_CHAT_ID` bilan mos chatda ishlaydi va shu chatning buyruqlar menyusida ko'rinadi.
+Panel botga ulangach, `/admin` administrator chatida va ruxsat berilgan ko'ruvchilarning shaxsiy chatlarida ishlaydi. Buyruq shu chatlarning menyusida ko'rinadi.
 
 Panelda jami foydalanuvchilar, bugun hamda oxirgi 7 va 30 kunda qo'shilganlar, oxirgi 7 kunda faol bo'lganlar, ariza qoldirgan foydalanuvchilar soni va ularning jami foydalanuvchilardagi ulushi (konversiya) ko'rsatiladi. Arizalar soni bugun hamda oxirgi 7 va 30 kun uchun beriladi. Yetkazilmagan arizalar soni ham ko'rsatiladi. Bugungi hisob va kunlik dinamika Toshkent vaqti (UTC+5) bo'yicha yuritiladi.
 
@@ -113,6 +113,48 @@ Yangilangan botni serverga chiqarishdan oldin `leads.db` bazasining zaxira nusxa
 ```bash
 cp leads.db leads.db.bak-YYYYMMDD
 ```
+
+## Statistika ko'ruvchi va Admin Mini App
+
+Sozlamalar namunasi `bot/.env.example` da. `bot/.env` ga kerakli qiymatlarni kiriting:
+
+| Kalit | Qiymat |
+| --- | --- |
+| `STATS_VIEWER_IDS` | Ixtiyoriy, vergul bilan ajratilgan Telegram foydalanuvchi ID'lari, masalan `111111111,222222222` |
+| `PANEL_URL` | Admin Mini App'ning `https://` manzili, masalan `https://2-31-25-204.sslip.io/admin/`; bo'sh bo'lsa panel HTTP serveri ishga tushmaydi |
+| `PANEL_PORT` | Ixtiyoriy lokal port; odatiy qiymat `8090` |
+
+O'z ID'ingizni `@userinfobot` orqali oling. `STATS_VIEWER_IDS` dagi odamlar va `ADMIN_CHAT_ID` musbat bo'lsa, shu ID egasi statistikaga kira oladi. Ko'ruvchi `/admin`, `/stats` va `/export` buyruqlaridan faqat bot bilan shaxsiy chatda foydalanadi; unga ariza xabarlari yuborilmaydi. CSV kelishi uchun ko'ruvchi avval botga `/start` yuborishi shart.
+
+Shaxsiy chatda `/admin` ichidagi **Визуал статистика** tugmasi yoki chat menyusi tugmasi Admin Mini App'ni ochadi. CSV so'ralganda fayl bot bilan chatga hujjat sifatida keladi. Kirish Telegram `initData` imzosi bilan tekshiriladi; uning amal qilish muddati 24 soat. Muddati o'tsa, Mini App'ni qayta oching.
+
+Serverni birinchi marta sozlash (Ubuntu/Debian): loyiha `/opt/quantum-bot` da, xizmat `quantum-bot` nomida deb olinadi. Avval botni to'xtatib, bazadan sana qo'shimchali zaxira nusxa oling; `DB_PATH` boshqacha bo'lsa, yo'lni moslang. So'ng [Caddy rasmiy APT yo'riqnomasi](https://caddyserver.com/docs/install) bo'yicha Caddy'ni o'rnating:
+
+```bash
+sudo systemctl stop quantum-bot.service
+cd /opt/quantum-bot
+sudo cp bot/data/leads.db "bot/data/leads.db.bak-$(date +%Y%m%d)"
+sudo apt install --yes debian-keyring debian-archive-keyring apt-transport-https curl
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+sudo chmod o+r /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+```
+
+`bot/.env` dagi `PANEL_URL`, `PANEL_PORT` va ko'ruvchilar ID'larini sozlang. `/etc/caddy/Caddyfile` ichida boshqa saytlar bo'lsa, faqat `deploy/Caddyfile` dagi blokni qo'shing, mavjud faylni ustidan yozmang. Faqat ushbu sayt bo'lsa:
+
+```bash
+sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+sudo systemctl reload caddy
+sudo ufw allow 80,443/tcp
+sudo systemctl restart quantum-bot.service
+curl -I https://2-31-25-204.sslip.io/admin/
+```
+
+Oxirgi buyruqda `200` holati va `Content-Security-Policy` sarlavhasi kutiladi. Mini App ko'rinishini lokal tekshirish uchun `bot/admin_webapp/tests/preview.html?state=loading` faylini oching; `state` qiymati `loading`, `outside`, `expired`, `forbidden`, `error`, `empty` yoki `full` bo'lishi mumkin.
 
 ## Shaxsiy ma'lumotlar
 

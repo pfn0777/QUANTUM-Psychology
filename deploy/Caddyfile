@@ -1,0 +1,8 @@
+# Caddy obtains the HTTPS certificate automatically.
+2-31-25-204.sslip.io {
+    route {
+        @admin path /admin /admin/*
+        reverse_proxy @admin 127.0.0.1:8090
+        respond 404
+    }
+}
