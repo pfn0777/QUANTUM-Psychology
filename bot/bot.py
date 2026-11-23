@@ -29,16 +29,19 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
+    MenuButtonWebApp,
     Message,
     ReplyKeyboardMarkup,
     User,
     WebAppInfo,
 )
+from aiohttp import web
 from dotenv import dotenv_values
 
 import admin_panel
 import catalog
 import leads
+import panel_server
 import stats
 import texts
 from storage import Storage
@@ -96,6 +99,17 @@ async def setup_commands(bot: Bot, settings: Settings) -> None:
             await bot.set_my_commands(admin_commands(), scope=BotCommandScopeChat(chat_id=chat_id))
         except Exception as exc:
             logger.error("Could not set bot commands: %s", type(exc).__name__)
+    if not settings.panel_url:
+        return
+    menu_chat_ids = set(settings.viewer_ids)
+    if settings.admin_chat_id > 0:
+        menu_chat_ids.add(settings.admin_chat_id)
+    menu_button = MenuButtonWebApp(text=admin_panel.PANEL_BUTTON_TEXT, web_app=WebAppInfo(url=settings.panel_url))
+    for chat_id in menu_chat_ids:
+        try:
+            await bot.set_chat_menu_button(chat_id=chat_id, menu_button=menu_button)
+        except Exception as exc:
+            logger.error("Could not set chat menu button: %s", type(exc).__name__)
 
 
 def _is_valid_panel_host(host: str | None) -> bool:
@@ -353,6 +367,11 @@ class BotHandlers:
             now_utc,
         )
 
+    def _admin_keyboard(self, chat: Chat) -> InlineKeyboardMarkup:
+        if chat.type == "private" and self.settings.panel_url:
+            return admin_panel.panel_keyboard(self.settings.panel_url)
+        return admin_panel.panel_keyboard()
+
     async def admin_menu(self, message: Message) -> None:
         if not self._can_view(message.chat):
             return
@@ -363,7 +382,7 @@ class BotHandlers:
                 logger.error("Could not read admin panel data: %s", type(exc).__name__)
                 await message.answer(texts.t("admin_read_error"))
                 return
-            await message.answer(overview, parse_mode=ParseMode.HTML, reply_markup=admin_panel.panel_keyboard())
+            await message.answer(overview, parse_mode=ParseMode.HTML, reply_markup=self._admin_keyboard(message.chat))
         except (TelegramAPIError, ClientDecodeError) as exc:
             logger.error("Could not send admin panel menu: %s", type(exc).__name__)
 
@@ -407,7 +426,7 @@ class BotHandlers:
                 await message.answer_document(content)
             elif content is not None:
                 reply_markup = (
-                    admin_panel.panel_keyboard()
+                    self._admin_keyboard(message.chat)
                     if callback.data == admin_panel.CB_OVERVIEW
                     else admin_panel.back_keyboard()
                 )
@@ -443,6 +462,16 @@ def build_dispatcher(handlers: BotHandlers) -> Dispatcher:
     return dispatcher
 
 
+async def _start_panel_safely(settings: Settings, storage: Storage, bot: Bot) -> web.AppRunner | None:
+    if not settings.panel_url:
+        return None
+    try:
+        return await panel_server.start_panel(panel_server.create_app(settings, storage, bot))
+    except OSError as exc:
+        logger.error("Could not start admin panel: %s", type(exc).__name__)
+        return None
+
+
 async def main() -> int:
     try:
         settings = await asyncio.to_thread(load_settings)
@@ -457,7 +486,9 @@ async def main() -> int:
     handlers = BotHandlers(settings, storage)
     dispatcher = build_dispatcher(handlers)
     retry_task = asyncio.create_task(handlers.retry_forever(bot))
+    runner = None
     try:
+        runner = await _start_panel_safely(settings, storage, bot)
         await dispatcher.start_polling(
             bot,
             allowed_updates=dispatcher.resolve_used_update_types(),
@@ -468,8 +499,13 @@ async def main() -> int:
             await retry_task
         except asyncio.CancelledError:
             pass
-        await storage.close()
-        await bot.session.close()
+        finally:
+            try:
+                if runner is not None:
+                    await runner.cleanup()
+            finally:
+                await storage.close()
+                await bot.session.close()
     return 0
 
 
