@@ -1,5 +1,5 @@
 # Statistika ko'ruvchi roli + Admin Mini App
-Holat: JARAYONDA
+Holat: TUGADI (2026-11-23)
 Ijrochi: codex
 Turi: ISH · Hajm: XAVFLI (auth, shaxsiy ma'lumot, yangi HTTP server)
 Spec: docs/specs/admin-miniapp.md
@@ -17,17 +17,24 @@ Qabul mezonlari: spec'dagi 10 band; `python -m pytest` + node testlar yashil.
 - [x] 3. Dashboard ma'lumoti (commit 5c7d368)
 ### Dizayn brifi (mentor, /impeccable) — docs/specs/admin-miniapp-design.md
 - [x] brif (yozildi; PRODUCT.md yo'q — taxminlar brifda belgilangan; 3 tab: Умумий/Аризалар/Фойдаланувчилар)
-### To'lqin 2 ← HOZIR SHU
-- [ ] 4. Panel HTTP serveri [XAVFLI]
-- [ ] 5. Admin Mini App frontend
-- [ ] 6. Paneldagi Mini App tugmasi (tugma matnlari admin_panel.py da hardcoded — texts.py/test_catalog kerak emas)
-### To'lqin 3
-- [ ] 7. Botga ulash [XAVFLI]
-- [ ] 8. README + deploy/Caddyfile
-### To'lqin 4
-- [ ] 9. Vizual ko'rik (/impeccable)
+### To'lqin 2 — TUGADI (pytest 343 passed, node 68 pass)
+- [x] 4. Panel HTTP serveri [XAVFLI] (commit 8b2d020, 3/3 urinish; panel_server.py ni mentor to'liq o'qidi: auth, allowlist, log, statik yo'l, 127.0.0.1 — maqbul. Qolgan 3 ta [O'RTA] → 4b)
+- [x] 5. Admin Mini App frontend (commit d6f46cc, 3/3 urinish; qolgan 1 ta [O'RTA] → 5b; 320px brauzer ko'rigi → 9)
+- [x] 6. Paneldagi Mini App tugmasi (commit c3068f0, 1-urinishda, 13 passed)
+### To'lqin 3 — TUGADI (pytest 372 passed, node 68 pass)
+- [x] 7. Botga ulash [XAVFLI] (commit 0493e5e, 1-urinishda, 100 passed; mentor diffni o'qidi)
+- [x] 4b. Panel server qoldiqlari [XAVFLI] (commit ae1b72f, 3/3 urinish, 77 passed; (a)(b)(c) yopildi; qolgan 3 ta [O'RTA] faqat auth'dan o'tgan ko'ruvchi yo'lida → "Kichik topilmalar")
+- [x] 5b. Manbalar qatori (commit b482c49, 1-urinishda, node 12 pass)
+### To'lqin 4 — TUGADI (pytest 376 passed, node 68 pass)
+- [x] 8. README + deploy/Caddyfile (1-urinishda; mentor diffni o'qidi: DB yo'li kodga mos, Caddy faqat /admin, sir yo'q; caddy lokal yo'q — validate serverda)
+- [x] 7b. Yopilish tartibi (1-urinishda, 104 passed; `_shutdown` helper, close_bot_session=False)
+- [x] 9. Vizual ko'rik (mentor, 2026-11-23): 360×640 va 1024×768 (full), 320×640 mobil emulyatsiya; holatlar full/empty/expired/error va 3 tab. 320px da gorizontal siljish yo'q (scrollWidth=320), tablar 44px balandlik, `<script>` ismi matn sifatida, noto'g'ri username havolasiz. Bloklovchi kamchilik yo'q → tuzatish qadami kerak emas. Mayda: 320px da "Янгиланди 14:05" ikki qatorga bo'linadi.
 
 ## Qarorlar
+- (2026-11-23) Qadam 4 va 5 3/3 urinishda tugadi: testlar yashil, qolgan topilmalar tor va aniq → joriy holat commit qilindi, qoldiqlar 4b/5b qadamlariga bo'lindi (skill qoidasi: bir marta bo'lish).
+- (2026-11-23) Qadam 7: web_app tugmasi faqat `chat.type == "private"` da (Telegram guruhda web_app inline tugmani rad etadi). Panel server porti band bo'lsa (OSError) — log, polling davom etadi.
+- (2026-11-23) Qadam 4, 3-urinish uchun mentor qarorlari: sarlavhalar `on_response_prepare` orqali; har qanday 5xx → {"error":"internal"} + faqat tur nomi logda; ClientError/ClientDecodeError → 502; statik fayl faqat static_dir ildizidagi .html/.js/.css; start_panel faqat 127.0.0.1.
+- (2026-11-23) Qadam 5: grafikdagi har kun uchun alohida nishon o'rniga butun grafik bitta interaktiv zona (pointer x → eng yaqin kun, ←/→ klaviatura, tanlangan kun izohda). Sabab: 320px da 30 kun = <10px, nishon minimumi bajarilmaydi.
 - Manzil: https://2-31-25-204.sslip.io/admin/ (foydalanuvchi tanlovi), Caddy reverse proxy -> 127.0.0.1:8090.
 - Mini App'da mijoz ma'lumoti to'liq (ism, telefon, username) — foydalanuvchi tanlovi.
 - Ko'ruvchi ariza xabarlarini olmaydi — foydalanuvchi tanlovi.
@@ -36,6 +43,11 @@ Qabul mezonlari: spec'dagi 10 band; `python -m pytest` + node testlar yashil.
 - CSV chatga send_document bilan yuboriladi.
 
 ## Kichik topilmalar (keyinroq)
+- panel_server (4b qoldig'i, mentor qarori bilan qabul — hammasi faqat initData+allowlist'dan o'tgan ko'ruvchi uchun): chunked eksportga 100-continue hajm tekshiruvisiz; mijoz tanani yarim yopsa yakuniy 400 kelmaydi; `request.read()` da timeout yo'q. Yechim kerak bo'lsa: chunked → 411, `asyncio.timeout`, EOF → 400.
+- test_panel_server.py:381 — test aiohttp ichki parseriga bog'langan.
+- Mini App: 320px da "Янгиланди 14:05" ikki qatorga bo'linadi (`white-space: nowrap` yetadi).
+- Manba konversiyasi leads/users — bir odam bir nechta ariza qoldirsa 100% dan oshishi mumkin (brif shunday).
+- `.codex/config.toml` (untracked) — /codex skill yaratgan Codex sozlamasi; commit qilinmaydi, foydalanuvchi qaror qiladi.
 - PANEL_URL: oxirida nuqtali host (`panel.example.org.`) rad etiladi; `https://[2001:db8::1]junk` qabul qilinadi (bot.py ~109/151). Operator config, xavf past.
 - webapp_auth: tz-siz `now` TypeError; bo'sh/str bo'lmagan token aniq xato bermaydi; noto'g'ri UTF-8 replacement bilan dekodlanadi.
 - dashboard: zonasiz now_utc mahalliy vaqt deb olinadi (ValueError tavsiya).
@@ -49,3 +61,5 @@ Qabul mezonlari: spec'dagi 10 band; `python -m pytest` + node testlar yashil.
 
 ## Keyingi sessiya uchun eslatma
 - Ish daraxti boshlanishda toza edi (HEAD f36a601).
+- To'lqin 2: sessiya uzildi; diskda uchala qadam fayllari bor (commit qilinmagan). Boshqaruvchi qayta ulandi — tekshirib, chalasini tugatadi.
+- Foydalanuvchi bot/.env ga STATS_VIEWER_IDS qo'shdi (1 ta, load_settings OK); PANEL_URL hali bo'sh.
