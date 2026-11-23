@@ -361,17 +361,16 @@ function buildChart(daily, totals) {
 function buildSources(sources) {
   const section = element("section", "surface sources-section");
   section.append(element("h2", "", "Манбалар (30 кун)"));
-  const max = sources.reduce((peak, { users, leads }) => Math.max(peak, users, leads), 0);
-  if (!max) {
+  if (sources.length === 0) {
     section.append(element("p", "muted", "Ҳали манба маълумоти йўқ"));
     return section;
   }
 
+  const max = sources.reduce((peak, { users, leads }) => Math.max(peak, users, leads), 0);
   const list = element("ul", "source-list");
   list.setAttribute("role", "list");
   const ranked = [...sources].sort((first, second) => second.users - first.users);
   for (const { label, users, leads } of ranked) {
-    if (!users && !leads) continue;
     const row = element("li", "source-row");
     const heading = element("div", "source-heading");
     const values = element("p", "meta source-values");
@@ -383,9 +382,9 @@ function buildSources(sources) {
     const bars = element("div", "source-bars");
     bars.setAttribute("aria-hidden", "true");
     for (const [kind, count] of [["users", users], ["leads", leads]]) {
-      if (!count) continue;
+      const width = max > 0 ? count / max * SOURCE_BAR.scale : 0;
       const svg = svgElement("svg", {
-        class: `series-${kind}`, width: `${count / max * SOURCE_BAR.scale}%`, height: SOURCE_BAR.height,
+        class: `series-${kind}`, width: `${width}%`, height: SOURCE_BAR.height,
       });
       svg.append(svgElement("rect", { width: "100%", height: SOURCE_BAR.height, rx: SOURCE_BAR.radius }));
       bars.append(svg);
