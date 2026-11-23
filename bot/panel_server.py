@@ -13,8 +13,12 @@ from typing import TYPE_CHECKING, Any, cast
 
 from aiogram.exceptions import ClientDecodeError, TelegramAPIError
 from aiogram.types import BufferedInputFile
-from aiohttp import ClientError, web
+from aiohttp import ClientError, HttpVersion11, hdrs, web
+from aiohttp.http_exceptions import HttpProcessingError
+from aiohttp.streams import StreamReader
+from aiohttp.web_protocol import RequestHandler, RequestPayloadError, _ErrInfo
 from aiohttp.web_urldispatcher import MatchInfoError
+from multidict import CIMultiDict
 
 import dashboard
 import webapp_auth
@@ -64,6 +68,9 @@ async def _handle_errors(
     request: web.Request, handler: Callable[[web.Request], Awaitable[web.StreamResponse]]
 ) -> web.StreamResponse:
     try:
+        # aiohttp only calls the expect handler when the first value is truthy.
+        if request.headers.get(hdrs.EXPECT) == "":
+            return await _reject_expect(request)
         if ".." in request.path.replace("\\", "/").split("/"):
             raise web.HTTPNotFound()
         response = await handler(request)
@@ -72,6 +79,9 @@ async def _handle_errors(
         return response
     except _APIError as exc:
         return web.json_response({"error": exc.code}, status=exc.status)
+    except (RequestPayloadError, HttpProcessingError) as exc:
+        _logger.warning("%s", type(exc).__name__)
+        return _error_and_close(HTTPStatus.BAD_REQUEST)
     except Exception as exc:
         if isinstance(exc, web.HTTPException) and exc.status < HTTPStatus.INTERNAL_SERVER_ERROR:
             raise
@@ -81,6 +91,29 @@ async def _handle_errors(
 
 def _internal_error() -> web.Response:
     return web.json_response({"error": "internal"}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+def _error_and_close(status: HTTPStatus, code: str = "bad_request") -> web.Response:
+    response = web.json_response({"error": code}, status=status)
+    response.force_close()
+    return response
+
+
+async def _reject_expect(_request: web.Request) -> web.Response:
+    return _error_and_close(HTTPStatus.EXPECTATION_FAILED)
+
+
+class _ExpectFallback(web.PlainResource):
+    """Reject Expect before aiohttp can use a 404 or 405 route's default handler."""
+
+    def __init__(self) -> None:
+        super().__init__("/")
+        self._reject_route = self.add_route(hdrs.METH_ANY, _reject_expect, expect_handler=_reject_expect)
+
+    async def resolve(self, request: web.Request) -> tuple[web.UrlMappingMatchInfo | None, set[str]]:
+        if hdrs.EXPECT in request.headers:
+            return web.UrlMappingMatchInfo({}, self._reject_route), set()
+        return None, set()
 
 
 async def _set_security_headers(request: web.Request, response: web.StreamResponse) -> None:
@@ -180,6 +213,30 @@ def create_app(
         )
         return web.json_response(payload)
 
+    async def expect_export(request: web.Request) -> web.Response | None:
+        expectations = request.headers.getall(hdrs.EXPECT)
+        if request.version != HttpVersion11 or len(expectations) != 1 or expectations[0].lower() != "100-continue":
+            return await _reject_expect(request)
+
+        try:
+            now = get_time().astimezone(timezone.utc)
+            _authorized_user(request, settings.token, allowed_ids, now)
+            length = request.content_length
+            limit = request.client_max_size
+            # aiohttp 3.10 read() rejects a body that reaches the configured limit.
+            if length is not None and limit and length >= limit:
+                raise _APIError(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "bad_request")
+        except _APIError as exc:
+            return _error_and_close(exc.status, exc.code)
+
+        status = HTTPStatus.CONTINUE
+        await request.writer.write_headers(
+            f"HTTP/1.1 {status.value} {status.phrase}", CIMultiDict(_SECURITY_HEADERS)
+        )
+        # aiohttp uses this counter to check whether the final response has started.
+        request.writer.output_size = 0
+        return None
+
     async def export_csv(request: web.Request) -> web.Response:
         now = get_time().astimezone(timezone.utc)
         user_id = _authorized_user(request, settings.token, allowed_ids, now)
@@ -210,13 +267,54 @@ def create_app(
     app = web.Application(middlewares=[_handle_errors])
     app.on_response_prepare.append(_set_security_headers)
     app[_PANEL_PORT] = settings.panel_port
-    app.router.add_get("/admin", redirect_to_index)
-    app.router.add_get("/admin/", static_asset)
-    app.router.add_get("/admin/fonts/{name}", font_asset)
-    app.router.add_get("/admin/api/dashboard", get_dashboard)
-    app.router.add_post("/admin/api/export", export_csv)
-    app.router.add_get("/admin/{name}", static_asset)
+    app.router.add_get("/admin", redirect_to_index, expect_handler=_reject_expect)
+    app.router.add_get("/admin/", static_asset, expect_handler=_reject_expect)
+    app.router.add_get("/admin/fonts/{name}", font_asset, expect_handler=_reject_expect)
+    app.router.add_get("/admin/api/dashboard", get_dashboard, expect_handler=_reject_expect)
+    app.router.add_post("/admin/api/export", export_csv, expect_handler=expect_export)
+    app.router.add_get("/admin/{name}", static_asset, expect_handler=_reject_expect)
+    app.router.register_resource(_ExpectFallback())
     return app
+
+
+class _PanelRequestHandler(RequestHandler):
+    _last_payload: StreamReader | None = None
+
+    def data_received(self, data: bytes) -> None:
+        request_count = self._request_count
+        super().data_received(data)
+        if self._request_count == request_count:
+            return
+
+        message, payload = self._messages[-1]
+        if isinstance(message, _ErrInfo):
+            # The C parser drops its payload on a framing error. aiohttp queues
+            # the error behind the request that is still waiting for that payload.
+            if self._last_payload is not None and not self._last_payload.is_eof():
+                self._last_payload.set_exception(message.exc)
+                self._messages.pop()
+            self._last_payload = None
+        else:
+            self._last_payload = payload if not payload.is_eof() else None
+
+    def handle_error(
+        self,
+        request: web.BaseRequest,
+        status: int = HTTPStatus.INTERNAL_SERVER_ERROR,
+        exc: BaseException | None = None,
+        message: str | None = None,
+    ) -> web.StreamResponse:
+        # aiohttp's parser supplies the raw request fragment as the error message.
+        if status == HTTPStatus.BAD_REQUEST:
+            if exc is not None:
+                _logger.warning("%s", type(exc).__name__)
+            return _error_and_close(HTTPStatus.BAD_REQUEST)
+        return super().handle_error(request, status, exc, message)
+
+
+class _PanelServer(web.Server):
+    def __call__(self) -> RequestHandler:
+        return _PanelRequestHandler(self, loop=self._loop, **self._kwargs)
 
 
 class _PanelRunner(web.AppRunner):
@@ -234,8 +332,12 @@ class _PanelRunner(web.AppRunner):
             request._match_info = unrouted
             return request
 
-        server.request_factory = make_panel_request
-        return server
+        return _PanelServer(
+            server.request_handler,
+            request_factory=make_panel_request,
+            handler_cancellation=server.handler_cancellation,
+            **server._kwargs,
+        )
 
 
 async def start_panel(
@@ -246,7 +348,8 @@ async def start_panel(
     # Parser logs can contain raw request headers and have no application-level filtering.
     protocol_logger = logging.Logger(f"{__name__}.protocol")  # noqa: LOG001
     protocol_logger.addHandler(logging.NullHandler())
-    runner = _PanelRunner(app, access_log=None, logger=protocol_logger)
+    # Clients receiving an early rejection may never send the advertised body.
+    runner = _PanelRunner(app, access_log=None, logger=protocol_logger, lingering_time=0)
     try:
         await runner.setup()
         await web.TCPSite(runner, PANEL_HOST, app[_PANEL_PORT] if port is None else port).start()

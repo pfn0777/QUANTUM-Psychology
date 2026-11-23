@@ -5,8 +5,10 @@ import hmac
 import json
 import logging
 from collections.abc import AsyncIterator, Mapping
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from http import HTTPStatus
 from http.client import parse_headers
 from io import BytesIO
 from pathlib import Path
@@ -18,7 +20,8 @@ import pytest
 from aiogram.exceptions import ClientDecodeError, TelegramAPIError
 from aiogram.methods import SendDocument
 from aiogram.types import BufferedInputFile
-from aiohttp import ClientError, ClientResponse, web
+from aiohttp import ClientError, ClientResponse, web, web_protocol
+from aiohttp.http_parser import HttpRequestParserC, HttpRequestParserPy
 from aiohttp.test_utils import TestClient, TestServer
 from yarl import URL
 
@@ -35,6 +38,7 @@ FOREIGN_ID = 1003
 GROUP_ID = -1002345
 DASHBOARD_URL = "/admin/api/dashboard"
 EXPORT_URL = "/admin/api/export"
+RAW_HTTP_TIMEOUT = 5
 STATIC_ASSETS = {
     "index.html": (b"<html>Panel</html>", "text/html"),
     "app.js": (b"export const panel = true;", "text/javascript"),
@@ -147,6 +151,30 @@ def app(
 async def client(app: web.Application) -> AsyncIterator[TestClient]:
     async with TestClient(TestServer(app), raise_for_status=False) as test_client:
         yield test_client
+
+
+@asynccontextmanager
+async def panel_connection(
+    app: web.Application,
+) -> AsyncIterator[tuple[asyncio.StreamReader, asyncio.StreamWriter]]:
+    runner = await start_panel(app)
+    try:
+        [(host, port)] = runner.addresses
+        async with asyncio.timeout(RAW_HTTP_TIMEOUT):
+            reader, writer = await asyncio.open_connection(host, port)
+            try:
+                yield reader, writer
+            finally:
+                writer.close()
+                await writer.wait_closed()
+    finally:
+        await runner.cleanup()
+
+
+async def read_response_head(reader: asyncio.StreamReader) -> tuple[int, dict[str, str]]:
+    head = await reader.readuntil(b"\r\n\r\n")
+    status_line, raw_headers = head.split(b"\r\n", 1)
+    return int(status_line.split()[1]), dict(parse_headers(BytesIO(raw_headers)).items())
 
 
 @pytest.mark.parametrize(
@@ -282,6 +310,106 @@ async def test_invalid_export_body_does_not_consume_cooldown(
     storage.export_users_csv.assert_not_awaited()
     bot.send_document.assert_not_awaited()
     assert (await client.post(EXPORT_URL, headers=headers, json={"kind": "leads"})).status == 200
+
+
+async def test_invalid_export_payload_returns_bad_request(
+    app: web.Application, storage: Mock, bot: SimpleNamespace, caplog: pytest.LogCaptureFixture
+) -> None:
+    body = b"invalid gzip data"
+    authorization = auth_headers()["Authorization"]
+    async with panel_connection(app) as (reader, writer):
+        writer.write(
+            (
+                f"POST {EXPORT_URL} HTTP/1.1\r\nHost: localhost\r\n"
+                f"Authorization: {authorization}\r\nContent-Encoding: gzip\r\n"
+                f"Content-Length: {len(body)}\r\n\r\n"
+            ).encode("ascii") + body
+        )
+        await writer.drain()
+        status, headers = await read_response_head(reader)
+        assert status == HTTPStatus.BAD_REQUEST
+        assert_security_headers(headers)
+        assert json.loads(await reader.read()) == {"error": "bad_request"}
+    storage.export_csv.assert_not_awaited()
+    bot.send_document.assert_not_awaited()
+    assert caplog.messages == ["RequestPayloadError"]
+    assert caplog.records[0].exc_info is None
+
+
+async def test_invalid_chunked_export_payload_returns_bad_request(
+    app: web.Application,
+    storage: Mock,
+    bot: SimpleNamespace,
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The Python parser exposes invalid chunk framing to request.read() as a payload error.
+    monkeypatch.setattr(web_protocol, "HttpRequestParser", HttpRequestParserPy)
+    authorization = auth_headers()["Authorization"]
+    async with panel_connection(app) as (reader, writer):
+        writer.write(
+            (
+                f"POST {EXPORT_URL} HTTP/1.1\r\nHost: localhost\r\n"
+                f"Authorization: {authorization}\r\nTransfer-Encoding: chunked\r\n\r\n"
+            ).encode("ascii") + b"Z\r\n"
+        )
+        await writer.drain()
+        status, headers = await read_response_head(reader)
+        assert status == HTTPStatus.BAD_REQUEST
+        assert_security_headers(headers)
+        assert json.loads(await reader.readexactly(int(headers["Content-Length"]))) == {
+            "error": "bad_request"
+        }
+    storage.export_csv.assert_not_awaited()
+    bot.send_document.assert_not_awaited()
+    assert caplog.messages == ["RequestPayloadError"]
+    assert caplog.records[0].exc_info is None
+
+
+@pytest.mark.parametrize("use_python_parser", [False, True], ids=["default-c", "python"])
+async def test_invalid_chunk_after_body_read_starts_returns_bad_request(
+    app: web.Application,
+    storage: Mock,
+    bot: SimpleNamespace,
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    use_python_parser: bool,
+) -> None:
+    if use_python_parser:
+        monkeypatch.setattr(web_protocol, "HttpRequestParser", HttpRequestParserPy)
+    else:
+        assert web_protocol.HttpRequestParser is HttpRequestParserC
+
+    read_started = asyncio.Event()
+    original_read = web.Request.read
+
+    async def notify_read(request: web.Request) -> bytes:
+        read_started.set()
+        return await original_read(request)
+
+    monkeypatch.setattr(web.Request, "read", notify_read)
+    authorization = auth_headers()["Authorization"]
+    async with panel_connection(app) as (reader, writer):
+        writer.write(
+            (
+                f"POST {EXPORT_URL} HTTP/1.1\r\nHost: localhost\r\n"
+                f"Authorization: {authorization}\r\nTransfer-Encoding: chunked\r\n\r\n"
+            ).encode("ascii")
+        )
+        await writer.drain()
+        await read_started.wait()
+        writer.write(b"invalid-chunk-test-marker\r\n")
+        await writer.drain()
+
+        status, headers = await read_response_head(reader)
+        assert status == HTTPStatus.BAD_REQUEST
+        assert_security_headers(headers)
+        assert json.loads(await reader.read()) == {"error": "bad_request"}
+
+    storage.export_csv.assert_not_awaited()
+    bot.send_document.assert_not_awaited()
+    assert caplog.messages == ["TransferEncodingError" if use_python_parser else "BadHttpMessage"]
+    assert caplog.records[0].exc_info is None
 
 
 @pytest.mark.parametrize(
@@ -429,9 +557,105 @@ async def test_woff2_from_fonts_directory(client: TestClient) -> None:
 
 
 async def test_early_http_error_has_security_headers(client: TestClient) -> None:
-    response = await client.get(DASHBOARD_URL, headers={"Expect": "unsupported"})
-    assert response.status == 417
-    assert_security_headers(response.headers)
+    response = await client.get(DASHBOARD_URL, headers={"Expect": "unknown-expect-test-marker"})
+    await assert_error(response, HTTPStatus.EXPECTATION_FAILED, "bad_request")
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "expect"),
+    [
+        ("GET", DASHBOARD_URL, "100-continue"),
+        ("GET", EXPORT_URL, "100-continue"),
+        ("HEAD", "/admin/", "100-continue"),
+        ("GET", "/unknown-path", "100-continue"),
+        ("PUT", DASHBOARD_URL, "100-continue"),
+        ("OPTIONS", "*", "100-continue"),
+        ("POST", EXPORT_URL, "unknown-expect-test-marker"),
+        ("POST", EXPORT_URL, ""),
+        ("POST", EXPORT_URL, "100-continue\r\nExpect: unknown-expect-test-marker"),
+    ],
+)
+async def test_unexpected_expect_returns_generic_error_without_continue(
+    app: web.Application, method: str, path: str, expect: str
+) -> None:
+    async with panel_connection(app) as (reader, writer):
+        writer.write(
+            (
+                f"{method} {path} HTTP/1.1\r\nHost: localhost\r\n"
+                f"Expect: {expect}\r\nContent-Length: {len(b'unsent')}\r\n\r\n"
+            ).encode("ascii")
+        )
+        await writer.drain()
+        status, headers = await read_response_head(reader)
+        assert status == HTTPStatus.EXPECTATION_FAILED
+        assert_security_headers(headers)
+        assert headers["Connection"] == "close"
+        body = await reader.read()
+        if method == "HEAD":
+            assert body == b""
+        else:
+            assert json.loads(body) == {"error": "bad_request"}
+
+
+async def test_export_continue_and_final_response_have_security_headers(app: web.Application) -> None:
+    body = b'{"kind":"leads"}'
+    authorization = auth_headers()["Authorization"]
+    async with panel_connection(app) as (reader, writer):
+        writer.write(
+            (
+                f"POST {EXPORT_URL} HTTP/1.1\r\nHost: localhost\r\n"
+                f"Authorization: {authorization}\r\nExpect: 100-continue\r\n"
+                f"Content-Length: {len(body)}\r\n\r\n"
+            ).encode("ascii")
+        )
+        await writer.drain()
+        status, headers = await read_response_head(reader)
+        assert status == HTTPStatus.CONTINUE
+        assert_security_headers(headers)
+        assert "Content-Length" not in headers
+        assert "Transfer-Encoding" not in headers
+
+        writer.write(body)
+        await writer.drain()
+        status, headers = await read_response_head(reader)
+        assert status == HTTPStatus.OK
+        assert_security_headers(headers)
+        assert json.loads(await reader.readexactly(int(headers["Content-Length"]))) == {"ok": True}
+
+
+@pytest.mark.parametrize(
+    ("authorization", "oversize", "expected_status", "error"),
+    [
+        ({}, False, HTTPStatus.UNAUTHORIZED, "unauthorized"),
+        (auth_headers(FOREIGN_ID), True, HTTPStatus.FORBIDDEN, "forbidden"),
+        (auth_headers(), True, HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "bad_request"),
+    ],
+)
+async def test_export_rejects_expect_before_sending_continue(
+    app: web.Application,
+    bot: SimpleNamespace,
+    authorization: dict[str, str],
+    oversize: bool,
+    expected_status: HTTPStatus,
+    error: str,
+) -> None:
+    content_length = app._client_max_size + 1 if oversize else len(b'{"kind":"leads"}')
+    auth_line = "".join(f"{name}: {value}\r\n" for name, value in authorization.items())
+    async with panel_connection(app) as (reader, writer):
+        writer.write(
+            (
+                f"POST {EXPORT_URL} HTTP/1.1\r\nHost: localhost\r\n"
+                f"{auth_line}Expect: 100-continue\r\nContent-Length: {content_length}\r\n\r\n"
+            ).encode("ascii")
+        )
+        await writer.drain()
+        status, headers = await read_response_head(reader)
+        assert status == expected_status
+        assert_security_headers(headers)
+        assert headers["Connection"] == "close"
+        assert json.loads(await reader.readexactly(int(headers["Content-Length"]))) == {"error": error}
+        assert await reader.read() == b""
+    bot.send_document.assert_not_awaited()
 
 
 @pytest.mark.parametrize(
@@ -444,27 +668,20 @@ async def test_router_errors_have_security_headers(client: TestClient, method: s
     assert_security_headers(response.headers)
 
 
-async def test_parser_error_has_security_headers(app: web.Application) -> None:
+async def test_parser_error_has_generic_body_and_security_headers(app: web.Application) -> None:
+    marker = b"malformed-header-test-marker"
     prepared = AsyncMock()
     app.on_response_prepare.append(prepared)
-    runner = await start_panel(app)
-    try:
-        [(host, port)] = runner.addresses
-        async with asyncio.timeout(5):
-            reader, writer = await asyncio.open_connection(host, port)
-            try:
-                writer.write(b"GET /admin/ HTTP/1.1\r\nHost: localhost\r\nInvalid header\r\n\r\n")
-                await writer.drain()
-                head = await reader.readuntil(b"\r\n\r\n")
-            finally:
-                writer.close()
-                await writer.wait_closed()
-        status_line, raw_headers = head.split(b"\r\n", 1)
-        assert status_line.split()[1] == b"400"
-        assert_security_headers(dict(parse_headers(BytesIO(raw_headers)).items()))
-        prepared.assert_awaited_once()
-    finally:
-        await runner.cleanup()
+    async with panel_connection(app) as (reader, writer):
+        writer.write(b"GET /admin/ HTTP/1.1\r\nHost: localhost\r\nInvalid " + marker + b"\r\n\r\n")
+        await writer.drain()
+        status, headers = await read_response_head(reader)
+        assert status == HTTPStatus.BAD_REQUEST
+        assert_security_headers(headers)
+        body = await reader.read()
+        assert marker not in body
+        assert json.loads(body) == {"error": "bad_request"}
+    prepared.assert_awaited_once()
 
 
 async def test_start_panel_binds_loopback_and_returns_cleanable_runner(app: web.Application) -> None:
