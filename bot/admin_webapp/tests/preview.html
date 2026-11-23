@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="uz-Cyrl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Статистика</title>
+  <script type="module">
+    import { render, renderState } from "../app.js";
+
+    const DAYS = 30;
+    const WEEK = 7;
+    const LEADS = 200;
+    const USERS = 180;
+    const LEAD_USERS = 72;
+    const UNDELIVERED = 2;
+    const MS_PER_MINUTE = 60_000;
+    const MS_PER_DAY = 86_400_000;
+    const GENERATED_AT = Date.parse("2026-11-22T09:05:00Z");
+    const DATE_LENGTH = 10;
+    const AGE = 31;
+    const LONG_NAME_LENGTH = 40;
+    const PHONE_SUFFIX_LENGTH = 4;
+    const PHONE_GROUP_LENGTH = 2;
+    const PERCENT_SCALE = 100;
+    const FAKE_NAMES = ["<script>alert(1)<\/script>", "=cmd", "С".repeat(LONG_NAME_LENGTH)];
+    const SOURCES = [
+      { key: "ig", label: "Instagram", weight: 7 },
+      { key: "tg", label: "Telegram", weight: 5 },
+      { key: "yt", label: "YouTube", weight: 3 },
+      { key: null, label: null, weight: 2 },
+    ];
+    const TOPICS = ["family", "parents", "fear", "money", "health", "selfworth", "support", "fatigue"];
+    const DAY_WEIGHTS = [1, 3, 2, 1, 4, 2, 1];
+    const timestamp = (daysAgo, minutesAgo = 0) =>
+      new Date(GENERATED_AT - daysAgo * MS_PER_DAY - minutesAgo * MS_PER_MINUTE).toISOString();
+    const dates = Array.from({ length: DAYS }, (_, index) => timestamp(DAYS - 1 - index).slice(0, DATE_LENGTH));
+    const openDays = dates.flatMap((_, index) => {
+      const daysAgo = DAYS - 1 - index;
+      if ((daysAgo + 1) % WEEK === 0) return [];
+      return Array(DAY_WEIGHTS[daysAgo % DAY_WEIGHTS.length]).fill(daysAgo);
+    });
+    const sourcePool = SOURCES.flatMap(({ label, weight }) => Array(weight).fill(label));
+
+    function activity(index) {
+      const daysAgo = openDays[openDays.length - 1 - index % openDays.length];
+      return timestamp(daysAgo, index);
+    }
+
+    function fixture(empty) {
+      const leads = Array.from({ length: empty ? 0 : LEADS }, (_, index) => {
+        const number = index + 1;
+        const digits = String(number).padStart(PHONE_SUFFIX_LENGTH, "0");
+        return {
+          created_at: activity(index),
+          name: FAKE_NAMES[index] ?? `Тест Мижоз ${number}`,
+          phone: `+998 90 000 ${digits.slice(0, PHONE_GROUP_LENGTH)} ${digits.slice(PHONE_GROUP_LENGTH)}`,
+          tg_username: index === 0 ? "invalid/name" : `fake_test_lead_${number}`,
+          source_label: index === 0 ? null : sourcePool[index % sourcePool.length],
+          region: "Тест ҳудуди",
+          age: AGE,
+          topics: index === 0 ? TOPICS : TOPICS.slice(0, 1),
+        };
+      }).sort((first, second) => second.created_at.localeCompare(first.created_at));
+      const users = Array.from({ length: empty ? 0 : USERS }, (_, index) => {
+        const number = index + 1;
+        const firstSeen = activity(index);
+        const recentVisit = timestamp(index % WEEK);
+        return {
+          first_seen_at: firstSeen,
+          last_seen_at: firstSeen > recentVisit ? firstSeen : recentVisit,
+          tg_full_name: `Тест Фойдаланувчи ${number}`,
+          tg_username: index === 0 ? null : `fake_test_user_${number}`,
+          source_label: sourcePool[index % sourcePool.length],
+          has_lead: index < LEAD_USERS,
+        };
+      }).sort((first, second) => second.first_seen_at.localeCompare(first.first_seen_at));
+      const daily = dates.map((date) => ({
+        date,
+        users: users.filter(({ first_seen_at }) => first_seen_at.startsWith(date)).length,
+        leads: leads.filter(({ created_at }) => created_at.startsWith(date)).length,
+      }));
+      const totalRecent = (key) => daily.slice(-WEEK).reduce((sum, day) => sum + day[key], 0);
+      const today = daily[daily.length - 1];
+      return {
+        generated_at: timestamp(0),
+        totals: {
+          users: users.length,
+          users_today: today.users,
+          users_7d: totalRecent("users"),
+          users_30d: users.length,
+          active_7d: users.length,
+          lead_users: empty ? 0 : LEAD_USERS,
+          conversion_pct: empty ? null : LEAD_USERS / USERS * PERCENT_SCALE,
+          leads_today: today.leads,
+          leads_7d: totalRecent("leads"),
+          leads_30d: leads.length,
+          undelivered: empty ? 0 : UNDELIVERED,
+        },
+        daily,
+        sources: empty ? [] : SOURCES.map(({ key, label }) => ({
+          key, label,
+          users: users.filter((row) => row.source_label === label).length,
+          leads: leads.filter((row) => row.source_label === label).length,
+        })),
+        leads,
+        users,
+      };
+    }
+
+    async function fetchText(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Preview asset unavailable: ${url}`);
+      return response.text();
+    }
+
+    async function preview() {
+      const [html, styles] = await Promise.all([fetchText("../index.html"), fetchText("../styles.css")]);
+      const page = new DOMParser().parseFromString(html, "text/html");
+      const style = document.createElement("style");
+      style.textContent = styles.replaceAll('url("fonts/', 'url("../../../webapp/fonts/');
+      document.head.append(style);
+      document.body.replaceChildren(document.importNode(page.getElementById("admin-app"), true));
+
+      const state = new URLSearchParams(location.search).get("state");
+      const screenStates = ["loading", "outside", "expired", "forbidden", "error"];
+      if (screenStates.includes(state)) renderState(state);
+      else render(fixture(state === "empty"));
+    }
+
+    preview().catch((error) => {
+      console.warn("Could not load the synthetic admin preview.", error);
+      document.body.textContent = "Маълумотни юклаб бўлмади";
+    });
+  </script>
+</head>
+<body></body>
+</html>

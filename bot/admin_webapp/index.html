@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="uz-Cyrl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Статистика</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script type="module" src="format.js"></script>
+  <script type="module" src="app.js" data-admin-entry></script>
+</head>
+<body>
+  <div class="app-shell" id="admin-app">
+    <header class="app-header">
+      <div>
+        <p class="wordmark">QUANTUM</p>
+        <h1>Статистика</h1>
+      </div>
+      <div class="header-actions">
+        <time id="updated-at" hidden></time>
+        <button id="refresh" class="icon-button" type="button" aria-label="Янгилаш" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 4v5h-5M20 9a8 8 0 1 0 .2 5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+    <p id="refresh-error" class="refresh-error" role="status"></p>
+    <main>
+      <section id="state" aria-live="polite"></section>
+      <div id="dashboard" hidden>
+        <div class="tabs" role="tablist" aria-label="Статистика">
+          <button id="tab-overview" type="button" role="tab" aria-selected="true" aria-controls="overview" data-tab="overview">Умумий</button>
+          <button id="tab-leads" type="button" role="tab" aria-selected="false" aria-controls="leads" data-tab="leads" tabindex="-1">Аризалар</button>
+          <button id="tab-users" type="button" role="tab" aria-selected="false" aria-controls="users" data-tab="users" tabindex="-1">Фойдаланувчилар</button>
+        </div>
+        <section id="overview" class="panel" role="tabpanel" aria-labelledby="tab-overview" tabindex="0"></section>
+        <section id="leads" class="panel" role="tabpanel" aria-labelledby="tab-leads" hidden></section>
+        <section id="users" class="panel" role="tabpanel" aria-labelledby="tab-users" hidden></section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
