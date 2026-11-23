@@ -1,5 +1,6 @@
 """Tests for admin panel wiring without opening a server or calling Telegram."""
 
+import asyncio
 import logging
 from dataclasses import replace
 from types import SimpleNamespace
@@ -89,17 +90,67 @@ async def test_main_polls_after_panel_start_and_cleans_up(settings, panel_mocks,
     lifecycle.attach_mock(poll, "poll")
     lifecycle.attach_mock(runner.cleanup, "cleanup")
     lifecycle.attach_mock(storage.close, "close_storage")
+    lifecycle.attach_mock(bot.session.close, "close_session")
 
     assert await bot_module.main() == 0
 
-    expected_calls = [call.start_panel(create_app.return_value), call.poll(bot, allowed_updates=[])]
+    expected_calls = [
+        call.start_panel(create_app.return_value),
+        call.poll(bot, allowed_updates=[], close_bot_session=False),
+    ]
     if not port_busy:
         expected_calls.append(call.cleanup())
         runner.cleanup.assert_awaited_once_with()
     expected_calls.append(call.close_storage())
+    expected_calls.append(call.close_session())
     assert lifecycle.mock_calls == expected_calls
     poll.assert_awaited_once()
     storage.close.assert_awaited_once_with()
+    bot.session.close.assert_awaited_once_with()
+
+
+@pytest.mark.parametrize("runner_present, failing_stage", [
+    (True, None),
+    (True, "runner"),
+    (True, "storage"),
+    (False, None),
+])
+async def test_shutdown_closes_resources_in_order(runner_present, failing_stage):
+    lifecycle = Mock()
+    runner = SimpleNamespace(cleanup=AsyncMock()) if runner_present else None
+    storage = SimpleNamespace(close=AsyncMock())
+    bot = SimpleNamespace(session=SimpleNamespace(close=AsyncMock()))
+    if runner is not None:
+        lifecycle.attach_mock(runner.cleanup, "cleanup")
+    lifecycle.attach_mock(storage.close, "close_storage")
+    lifecycle.attach_mock(bot.session.close, "close_session")
+
+    async def retry_forever():
+        try:
+            await asyncio.Event().wait()
+        finally:
+            lifecycle.retry_cancelled()
+
+    retry_task = asyncio.create_task(retry_forever())
+    await asyncio.sleep(0)
+    failure = RuntimeError(f"{failing_stage} cleanup failed") if failing_stage else None
+    if failing_stage == "runner":
+        runner.cleanup.side_effect = failure
+    elif failing_stage == "storage":
+        storage.close.side_effect = failure
+
+    if failure is None:
+        await bot_module._shutdown(retry_task, runner, storage, bot)
+    else:
+        with pytest.raises(RuntimeError, match=str(failure)):
+            await bot_module._shutdown(retry_task, runner, storage, bot)
+
+    expected_calls = [call.retry_cancelled()]
+    if runner is not None:
+        expected_calls.append(call.cleanup())
+    expected_calls.extend([call.close_storage(), call.close_session()])
+    assert lifecycle.mock_calls == expected_calls
+    assert retry_task.cancelled()
 
 
 @pytest.mark.parametrize("chat_id, chat_type, panel_url, expected_urls", [

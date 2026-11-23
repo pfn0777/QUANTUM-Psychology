@@ -472,6 +472,24 @@ async def _start_panel_safely(settings: Settings, storage: Storage, bot: Bot) ->
         return None
 
 
+async def _shutdown(retry_task: asyncio.Task, runner: web.AppRunner | None, storage: Storage, bot: Bot) -> None:
+    retry_task.cancel()
+    try:
+        try:
+            await retry_task
+        except asyncio.CancelledError:
+            pass
+    finally:
+        try:
+            if runner is not None:
+                await runner.cleanup()
+        finally:
+            try:
+                await storage.close()
+            finally:
+                await bot.session.close()
+
+
 async def main() -> int:
     try:
         settings = await asyncio.to_thread(load_settings)
@@ -492,20 +510,10 @@ async def main() -> int:
         await dispatcher.start_polling(
             bot,
             allowed_updates=dispatcher.resolve_used_update_types(),
+            close_bot_session=False,
         )
     finally:
-        retry_task.cancel()
-        try:
-            await retry_task
-        except asyncio.CancelledError:
-            pass
-        finally:
-            try:
-                if runner is not None:
-                    await runner.cleanup()
-            finally:
-                await storage.close()
-                await bot.session.close()
+        await _shutdown(retry_task, runner, storage, bot)
     return 0
 
 
