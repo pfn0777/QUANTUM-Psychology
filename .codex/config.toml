@@ -1,0 +1,27 @@
+# Lean Codex context for jobs run in this repo (/codex skill).
+
+# Do not inject the 173-skill catalog (~11k tokens per call).
+[skills]
+include_instructions = false
+
+# Browser / computer-use tools are not needed for code jobs.
+[mcp_servers.chrome-devtools]
+enabled = false
+
+[mcp_servers.node_repl]
+enabled = false
+
+[plugins."browser@openai-bundled"]
+enabled = false
+
+[plugins."chrome@openai-bundled"]
+enabled = false
+
+[plugins."computer-use@openai-bundled"]
+enabled = false
+
+[plugins."unified-computer-use@openai-bundled"]
+enabled = false
+
+[plugins."visualize@openai-bundled"]
+enabled = false
