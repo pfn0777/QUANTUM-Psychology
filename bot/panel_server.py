@@ -233,6 +233,10 @@ def create_app(
         await request.writer.write_headers(
             f"HTTP/1.1 {status.value} {status.phrase}", CIMultiDict(_SECURITY_HEADERS)
         )
+        # aiohttp 3.12+ buffers headers until send_headers() is called.
+        send_headers = getattr(request.writer, "send_headers", None)
+        if send_headers is not None:
+            send_headers()
         # aiohttp uses this counter to check whether the final response has started.
         request.writer.output_size = 0
         return None

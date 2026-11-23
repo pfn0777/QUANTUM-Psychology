@@ -362,7 +362,7 @@ async def test_invalid_chunked_export_payload_returns_bad_request(
         }
     storage.export_csv.assert_not_awaited()
     bot.send_document.assert_not_awaited()
-    assert caplog.messages == ["RequestPayloadError"]
+    assert caplog.messages in (["RequestPayloadError"], ["TransferEncodingError"])
     assert caplog.records[0].exc_info is None
 
 

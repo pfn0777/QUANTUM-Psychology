@@ -30,6 +30,12 @@ Qabul mezonlari: spec'dagi 10 band; `python -m pytest` + node testlar yashil.
 - [x] 7b. Yopilish tartibi (1-urinishda, 104 passed; `_shutdown` helper, close_bot_session=False)
 - [x] 9. Vizual ko'rik (mentor, 2026-11-23): 360×640 va 1024×768 (full), 320×640 mobil emulyatsiya; holatlar full/empty/expired/error va 3 tab. 320px da gorizontal siljish yo'q (scrollWidth=320), tablar 44px balandlik, `<script>` ismi matn sifatida, noto'g'ri username havolasiz. Bloklovchi kamchilik yo'q → tuzatish qadami kerak emas. Mayda: 320px da "Янгиланди 14:05" ikki qatorga bo'linadi.
 
+### To'lqin 5 — deploy tuzatishi (2026-11-23)
+- [x] 10. aiohttp 3.12+ moslik: 100-continue `send_headers()`; log nomi testi (1-urinishda; lokal 376 passed, serverda aiohttp 3.14.5 bilan 375 passed + 1 skipped (Node yo'q)) — commit kutilmoqda
+### Deploy (2026-11-23)
+- Caddy v2.11.9 o'rnatildi, sertifikat olindi, ufw 80/443 ochildi; kod /opt/quantum-bot ga, leads.db.bak-20261123-0625; quantum-bot active, NRestarts=0; boshqa 11 servis active.
+- Panel ishga tushmadi (8090 yo'q) — serverdagi .env da PANEL_URL hali yo'q (foydalanuvchi qo'shadi).
+
 ## Qarorlar
 - (2026-11-23) Qadam 4 va 5 3/3 urinishda tugadi: testlar yashil, qolgan topilmalar tor va aniq → joriy holat commit qilindi, qoldiqlar 4b/5b qadamlariga bo'lindi (skill qoidasi: bir marta bo'lish).
 - (2026-11-23) Qadam 7: web_app tugmasi faqat `chat.type == "private"` da (Telegram guruhda web_app inline tugmani rad etadi). Panel server porti band bo'lsa (OSError) — log, polling davom etadi.
