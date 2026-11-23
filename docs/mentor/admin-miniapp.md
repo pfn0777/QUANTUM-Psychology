@@ -31,10 +31,11 @@ Qabul mezonlari: spec'dagi 10 band; `python -m pytest` + node testlar yashil.
 - [x] 9. Vizual ko'rik (mentor, 2026-11-23): 360×640 va 1024×768 (full), 320×640 mobil emulyatsiya; holatlar full/empty/expired/error va 3 tab. 320px da gorizontal siljish yo'q (scrollWidth=320), tablar 44px balandlik, `<script>` ismi matn sifatida, noto'g'ri username havolasiz. Bloklovchi kamchilik yo'q → tuzatish qadami kerak emas. Mayda: 320px da "Янгиланди 14:05" ikki qatorga bo'linadi.
 
 ### To'lqin 5 — deploy tuzatishi (2026-11-23)
-- [x] 10. aiohttp 3.12+ moslik: 100-continue `send_headers()`; log nomi testi (1-urinishda; lokal 376 passed, serverda aiohttp 3.14.5 bilan 375 passed + 1 skipped (Node yo'q)) — commit kutilmoqda
+- [x] 10. aiohttp 3.12+ moslik: 100-continue `send_headers()`; log nomi testi (1-urinishda; lokal 376 passed, serverda aiohttp 3.14.5 bilan 375 passed + 1 skipped (Node yo'q)) (commit 785d227)
 ### Deploy (2026-11-23)
 - Caddy v2.11.9 o'rnatildi, sertifikat olindi, ufw 80/443 ochildi; kod /opt/quantum-bot ga, leads.db.bak-20261123-0625; quantum-bot active, NRestarts=0; boshqa 11 servis active.
-- Panel ishga tushmadi (8090 yo'q) — serverdagi .env da PANEL_URL hali yo'q (foydalanuvchi qo'shadi).
+- Foydalanuvchi serverdagi .env ga PANEL_URL va STATS_VIEWER_IDS qo'shdi; restartdan keyin panel 127.0.0.1:8090 da, /admin/ 200 + CSP, API kirishsiz 401, /admin/tests/ 404.
+- Telegram'da foydalanuvchi tekshirdi (2026-11-23): ko'ruvchi /admin, Mini App, CSV, admin guruh — hammasi ishladi.
 
 ## Qarorlar
 - (2026-11-23) Qadam 4 va 5 3/3 urinishda tugadi: testlar yashil, qolgan topilmalar tor va aniq → joriy holat commit qilindi, qoldiqlar 4b/5b qadamlariga bo'lindi (skill qoidasi: bir marta bo'lish).
@@ -61,9 +62,9 @@ Qabul mezonlari: spec'dagi 10 band; `python -m pytest` + node testlar yashil.
 - Muhit: `python -m pytest` RTK orqali "No tests collected" ko'rsatishi mumkin — `rtk proxy python -m pytest` ishlatilsin.
 
 ## Foydalanuvchi vazifalari
-- [ ] bot/.env: ADMIN_CHAT_ID da bitta ID qoldirish; STATS_VIEWER_IDS=...; PANEL_URL=https://2-31-25-204.sslip.io/admin/
-- [ ] Deploy so'rash ("Hetznerga deploy qil"): leads.db backup, Caddy, ufw 80/443, serverdagi .env ni o'zi yangilaydi.
-- [ ] Telegram'da tekshirish.
+- [x] bot/.env: ADMIN_CHAT_ID da bitta ID qoldirish; STATS_VIEWER_IDS=...; PANEL_URL=https://2-31-25-204.sslip.io/admin/
+- [x] Deploy so'rash ("Hetznerga deploy qil"): leads.db backup, Caddy, ufw 80/443, serverdagi .env ni o'zi yangiladi.
+- [x] Telegram'da tekshirish.
 
 ## Keyingi sessiya uchun eslatma
 - Ish daraxti boshlanishda toza edi (HEAD f36a601).
