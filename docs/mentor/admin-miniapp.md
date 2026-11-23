@@ -67,6 +67,9 @@ Qabul mezonlari: spec'dagi 10 band; `python -m pytest` + node testlar yashil.
 - [x] Telegram'da tekshirish.
 
 ## Keyingi sessiya uchun eslatma
+- OCHIQ: `C:\Users\user\.claude\skills\hetzner-deploy\SKILL.md` ga yozish (mentor-rejim hook blokladi):
+  1) "`ufw` is on and allows **only OpenSSH**." → "`ufw` is on and allows OpenSSH + 80/tcp + 443/tcp (80/443 opened 2026-11-23 for Caddy)."
+  2) "Shared infra" paragrafiga: Caddy (2026-11-23, apt cloudsmith caddy-stable, unit `caddy`) 80/443 ni egallaydi, auto HTTPS; `/etc/caddy/Caddyfile` = quantum-bot `deploy/Caddyfile` (`2-31-25-204.sslip.io`, `/admin*` → 127.0.0.1:8090, qolgani 404); yangi web loyiha — faqat sayt bloki QO'SHILADI, ustidan yozilmaydi; `caddy validate` → `systemctl reload caddy`; asl fayl `Caddyfile.default-bak`. quantum-bot deploy: `git ls-files bot deploy pytest.ini webapp/fonts` → stage, `/opt/quantum-bot/.venv` bilan pytest, stop, `bot/data/leads.db` backup, nusxa, `root:quantum-bot` 640/750 (`bot/data` dan tashqari), start.
 - Ish daraxti boshlanishda toza edi (HEAD f36a601).
 - To'lqin 2: sessiya uzildi; diskda uchala qadam fayllari bor (commit qilinmagan). Boshqaruvchi qayta ulandi — tekshirib, chalasini tugatadi.
 - Foydalanuvchi bot/.env ga STATS_VIEWER_IDS qo'shdi (1 ta, load_settings OK); PANEL_URL hali bo'sh.
