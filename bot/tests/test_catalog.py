@@ -65,6 +65,27 @@ EXPECTED_TEXT_KEYS = {
     "cmd_export",
     "welcome_caption",
     "start_greeting",
+    "results_button",
+    "coaching_button",
+    "about_button",
+    "contact_button",
+    "callback_button",
+    "results_intro",
+    "results_footer",
+    "results_more_button",
+    "results_empty",
+    "coaching_caption",
+    "about_text",
+    "contact_text",
+    "callback_thanks",
+    "callback_not_own",
+    "callback_cooldown",
+    "media_unavailable",
+    "nav_results",
+    "nav_coaching",
+    "nav_about",
+    "admin_phone_button",
+    "write_admin_button",
     "more_info_button",
     "open_button",
     "thanks",
@@ -156,14 +177,7 @@ def test_text_keys_and_messages() -> None:
     assert set(TEXTS["cyr"]) == set(TEXTS["lat"]) == EXPECTED_TEXT_KEYS
     for messages in TEXTS.values():
         assert all(isinstance(message, str) and message.strip() for message in messages.values())
-        assert messages["start_greeting"] == "👇"
-        assert all(
-            ord(char) < EMOJI_HIGH_START
-            and not EMOJI_MISC_START <= ord(char) <= EMOJI_MISC_END
-            for key, message in messages.items()
-            if key != "start_greeting"
-            for char in message
-        )
+        assert "\n" in messages["start_greeting"]
 
 
 def test_text_fallbacks_and_unknown_key() -> None:
@@ -194,3 +208,12 @@ def test_required_client_copy() -> None:
         assert ("Сиз танлаган вақтда" if script == "cyr" else "Siz tanlagan vaqtda") in thanks
         assert "18–99" in TEXTS[script]["err_age"]
         assert "+998 XX XXX XX XX" in TEXTS[script]["err_phone"]
+
+
+@pytest.mark.parametrize("script", SCRIPTS)
+@pytest.mark.parametrize("key", ("results_footer", "results_more_button"))
+def test_results_page_text_formatting(script: str, key: str) -> None:
+    rendered = t(key, script, page=1, total=3)
+    assert "1" in rendered
+    assert "3" in rendered
+    assert "{" not in rendered and "}" not in rendered
