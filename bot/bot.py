@@ -29,7 +29,7 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
-    MenuButtonWebApp,
+    MenuButtonCommands,
     Message,
     ReplyKeyboardMarkup,
     User,
@@ -102,12 +102,10 @@ async def setup_commands(bot: Bot, settings: Settings) -> None:
             await bot.set_my_commands(admin_commands(), scope=BotCommandScopeChat(chat_id=chat_id))
         except Exception as exc:
             logger.error("Could not set bot commands: %s", type(exc).__name__)
-    if not settings.panel_url:
-        return
     menu_chat_ids = set(settings.viewer_ids)
     if settings.admin_chat_id > 0:
         menu_chat_ids.add(settings.admin_chat_id)
-    menu_button = MenuButtonWebApp(text=admin_panel.PANEL_BUTTON_TEXT, web_app=WebAppInfo(url=settings.panel_url))
+    menu_button = MenuButtonCommands()
     for chat_id in menu_chat_ids:
         try:
             await bot.set_chat_menu_button(chat_id=chat_id, menu_button=menu_button)

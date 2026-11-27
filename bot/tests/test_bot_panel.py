@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, call
 
 import pytest
-from aiogram.types import Chat, MenuButtonWebApp, WebAppInfo
+from aiogram.types import Chat, MenuButtonCommands
 
 import admin_panel
 import bot as bot_module
@@ -182,13 +182,13 @@ async def test_admin_overview_keyboard_only_shows_mini_app_in_private_chat(
 @pytest.mark.parametrize("admin_chat_id, panel_url, expected_ids", [
     (ADMIN_CHAT_ID, PANEL_URL, {ADMIN_CHAT_ID, VIEWER_ID, OTHER_VIEWER_ID}),
     (ADMIN_GROUP_ID, PANEL_URL, {VIEWER_ID, OTHER_VIEWER_ID}),
-    (ADMIN_CHAT_ID, "", set()),
+    (ADMIN_CHAT_ID, "", {ADMIN_CHAT_ID, VIEWER_ID, OTHER_VIEWER_ID}),
 ])
-async def test_setup_commands_sets_mini_app_menu_for_allowed_chats(settings, admin_chat_id, panel_url, expected_ids):
+async def test_setup_commands_sets_commands_menu_for_allowed_chats(settings, admin_chat_id, panel_url, expected_ids):
     bot = SimpleNamespace(set_my_commands=AsyncMock(), set_chat_menu_button=AsyncMock())
     await bot_module.setup_commands(bot, replace(settings, admin_chat_id=admin_chat_id, panel_url=panel_url))
 
-    button = MenuButtonWebApp(text=admin_panel.PANEL_BUTTON_TEXT, web_app=WebAppInfo(url=panel_url))
+    button = MenuButtonCommands()
     assert bot.set_chat_menu_button.await_count == len(expected_ids)
     bot.set_chat_menu_button.assert_has_awaits(
         [call(chat_id=chat_id, menu_button=button) for chat_id in expected_ids], any_order=True,
