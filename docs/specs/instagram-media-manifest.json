@@ -1,0 +1,85 @@
+{
+  "source": "instagram.com/quantum_psychology_ highlights, captured 2026-11-27 as screen captures of paused stories (stories are video cards, 360x640; CDN URLs are not downloadable)",
+  "capture_size": [327, 583],
+  "crop_note": "crop = [left, top, right, bottom] in capture pixels; removes Instagram UI, music stickers and link stickers",
+  "bot_order": [
+    "Otzivlar/instagram/natijalar/01..15",
+    "Otzivlar/instagram/otziv/01..06",
+    "Otzivlar/Screenshot_1..6.png"
+  ],
+  "groups": {
+    "natijalar": {
+      "highlight": "НАТИЖАЛАР",
+      "highlight_id": "18037754120647861",
+      "target": "bot/assets/reviews",
+      "files": [
+        {"file": "Otzivlar/instagram/natijalar/01.png", "crop": [0, 132, 327, 523], "note": "Amaliyot, Коучинг 7"},
+        {"file": "Otzivlar/instagram/natijalar/02.png", "crop": [0, 0, 327, 583], "note": "REELS дан натижа"},
+        {"file": "Otzivlar/instagram/natijalar/03.png", "crop": [0, 0, 327, 515], "note": "Нур ва тутун"},
+        {"file": "Otzivlar/instagram/natijalar/04.png", "crop": [0, 0, 327, 525], "note": "Коучинг 5 mijoz fikrlari"},
+        {"file": "Otzivlar/instagram/natijalar/05.png", "crop": [0, 0, 327, 480], "note": "Ҳаётимдаги ўзгариш, Коучинг 6"},
+        {"file": "Otzivlar/instagram/natijalar/06.png", "crop": [0, 0, 327, 548], "note": "Коучинг-8 иштирокчиси"},
+        {"file": "Otzivlar/instagram/natijalar/07.png", "crop": [30, 212, 245, 530], "note": "Telegram chat, Коучинг 5"},
+        {"file": "Otzivlar/instagram/natijalar/08.png", "crop": [0, 0, 327, 510], "note": "Олдин ва ҳозир"},
+        {"file": "Otzivlar/instagram/natijalar/09.png", "crop": [0, 0, 327, 583], "note": "Реал фикрлар, Коучинг 9"},
+        {"file": "Otzivlar/instagram/natijalar/10.png", "crop": [0, 0, 327, 420], "note": "Ҳар куни 1%дан"},
+        {"file": "Otzivlar/instagram/natijalar/11.png", "crop": [0, 0, 327, 325], "note": "Мен бугун ўзгаришни ҳис қиляпман"},
+        {"file": "Otzivlar/instagram/natijalar/12.png", "crop": [0, 0, 327, 512], "note": "Коучинг 8, 1"},
+        {"file": "Otzivlar/instagram/natijalar/13.png", "crop": [0, 0, 327, 500], "note": "Коучинг 8, 2"},
+        {"file": "Otzivlar/instagram/natijalar/14.png", "crop": [0, 0, 327, 525], "note": "Telegram chat, Коучинг 11"},
+        {"file": "Otzivlar/instagram/natijalar/15.png", "crop": [0, 0, 327, 535], "note": "Қадамма қадам"}
+      ],
+      "skipped": [
+        {"story": 10, "reason": "promo for Коучинг 11 start plus a health claim (illnesses stopped)"},
+        {"story": 18, "reason": "capture failed at the end of the highlight"}
+      ]
+    },
+    "otziv": {
+      "highlight": "ОТЗЫВ",
+      "highlight_id": "18617364763047648",
+      "target": "bot/assets/reviews",
+      "files": [
+        {"file": "Otzivlar/instagram/otziv/01.png", "crop": [0, 145, 327, 525], "note": "Мижоз фикри, 8 ойлик коучинг"},
+        {"file": "Otzivlar/instagram/otziv/02.png", "crop": [0, 95, 327, 520], "note": "Коучинггача / ҳозир"},
+        {"file": "Otzivlar/instagram/otziv/03.png", "crop": [0, 90, 327, 520], "note": "8 ой ичида натижалар"},
+        {"file": "Otzivlar/instagram/otziv/04.png", "crop": [0, 75, 327, 500], "note": "Энг яхши ишим"},
+        {"file": "Otzivlar/instagram/otziv/05.png", "crop": [0, 100, 327, 535], "note": "У нимани англади"},
+        {"file": "Otzivlar/instagram/otziv/06.png", "crop": [0, 100, 327, 535], "note": "8 ойлик коучингдан сўнг"}
+      ],
+      "skipped": [
+        {"story": "8 ой — бу ҳақиқий йўл; Ушбу коучинг сиз учун", "reason": "sales cards, not reviews"},
+        {"story": "Сизда кучлироқ қувват бор", "reason": "promo"},
+        {"story": "3,5 ойда ўзгарди (1/3, 2/3)", "reason": "health claims (allergy, migraine cured); mentor decision, user may re-add"},
+        {"story": "remaining ~25 stories", "reason": "not reviewed; enough material for 3 album pages"}
+      ]
+    },
+    "natija_otziv": {
+      "highlight": "НАТИЖА - ОТЗЫВ",
+      "highlight_id": "17970932210918584",
+      "files": [],
+      "skipped": [{"story": "all", "reason": "not captured; enough material, can be added later with the same procedure"}]
+    },
+    "asoschi": {
+      "highlight": "АСОСЧИ QPsy",
+      "highlight_id": "18061291430783880",
+      "target": "bot/assets/about",
+      "files": [
+        {"file": "Otzivlar/instagram/asoschi/01.png", "crop": [0, 110, 327, 535], "note": "Зулхумор Қодирова, founder card"},
+        {"file": "Otzivlar/instagram/asoschi/02.png", "crop": [0, 50, 327, 535], "note": "Gym: 'бир пайтлар 1-гуруҳ ногирони', 45 ёш"}
+      ],
+      "skipped": [{"story": 2, "reason": "video frame with overlaid text, unclear subject"}]
+    }
+  },
+  "telegram_screenshots": {
+    "target": "bot/assets/reviews",
+    "files": [
+      "Otzivlar/Screenshot_1.png", "Otzivlar/Screenshot_2.png", "Otzivlar/Screenshot_3.png",
+      "Otzivlar/Screenshot_4.png", "Otzivlar/Screenshot_5.png", "Otzivlar/Screenshot_6.png"
+    ],
+    "crop": null
+  },
+  "video": {
+    "source": "Kouching 12 haqida video/c197f912.mp4",
+    "target": "bot/assets/coaching12.mp4"
+  }
+}
