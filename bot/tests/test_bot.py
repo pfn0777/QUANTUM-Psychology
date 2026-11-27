@@ -18,6 +18,7 @@ from aiogram.types import (
     BotCommandScopeDefault,
     BufferedInputFile,
     Chat,
+    Contact,
     FSInputFile,
     InaccessibleMessage,
     InlineKeyboardMarkup,
@@ -28,6 +29,7 @@ from aiogram.types import (
 import admin_panel
 import bot as bot_module
 import leads
+import texts
 from bot import BotHandlers, ConfigError, Settings, build_dispatcher, load_settings
 from storage import Storage
 from texts import t
@@ -55,10 +57,12 @@ PAYLOAD = {
 
 
 class FakeMessage:
-    def __init__(self, user, *, text=None, data=None, chat_id=1, chat_type="private", photo_error=None):
+    def __init__(self, user, *, text=None, data=None, contact=None, chat_id=1, chat_type="private", photo_error=None):
         self.from_user = user
         self.text = text
+        self.contact = contact
         self.chat = Chat(id=chat_id, type=chat_type)
+        self.bot = FakeBot()
         self.web_app_data = SimpleNamespace(data=data) if data is not None else None
         self.answers = []
         self.photos = []
@@ -106,7 +110,11 @@ class FakeBot:
 async def configured(tmp_db_path):
     storage = Storage(tmp_db_path)
     await storage.init()
-    handlers = BotHandlers(Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_db_path), storage)
+    fake_showcase = SimpleNamespace(
+        send_results=AsyncMock(), send_video=AsyncMock(), send_about=AsyncMock(),
+        send_contact=AsyncMock(), handle_callback=AsyncMock(),
+    )
+    handlers = BotHandlers(Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL, tmp_db_path), storage, fake_showcase)
     try:
         yield handlers, storage
     finally:
@@ -193,8 +201,18 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     handlers, _ = configured
     handlers.settings = Settings("unused", ADMIN_CHAT_ID, WEBAPP_URL + "?a=1", handlers.settings.db_path)
     source_message = FakeMessage(fake_user_factory(), text="/start ig")
+    video_orders = []
+
+    async def record_video(*args):
+        video_orders.append(source_message.calls.copy())
+
+    handlers.showcase.send_video.side_effect = record_video
     await handlers.start(source_message)
     assert source_message.calls == ["photo", "answer"]
+    assert video_orders == [["photo", "answer"]]
+    handlers.showcase.send_video.assert_awaited_once_with(
+        source_message.bot, source_message.chat.id, texts.TEXTS["cyr"]
+    )
     assert len(source_message.photos) == 1
     assert len(source_message.answers) == 1
     photo, photo_kwargs = source_message.photos[0]
@@ -206,11 +224,21 @@ async def test_start_source_and_unknown(configured, fake_user_factory):
     assert info_button.text == t("more_info_button")
     assert info_button.url == "https://birjoyda.vercel.app/quantum-psychology"
     text, kwargs = source_message.answers[0]
-    assert text == "👇"
+    assert text == t("start_greeting")
     assert isinstance(kwargs["reply_markup"], ReplyKeyboardMarkup)
     button = kwargs["reply_markup"].keyboard[0][0]
     assert button.text == t("open_button")
     assert button.web_app.url == WEBAPP_URL + "?a=1&src=ig"
+    reply_keyboard = kwargs["reply_markup"]
+    assert reply_keyboard.resize_keyboard is True
+    assert reply_keyboard.is_persistent is True
+    assert [[button.text for button in row] for row in reply_keyboard.keyboard] == [
+        [t("open_button")],
+        [t("results_button"), t("coaching_button")],
+        [t("about_button"), t("contact_button")],
+        [t("callback_button")],
+    ]
+    assert reply_keyboard.keyboard[3][0].request_contact is True
     unknown_message = FakeMessage(fake_user_factory(), text="/start unknown")
     await handlers.start(unknown_message)
     assert unknown_message.answers[0][1]["reply_markup"].keyboard[0][0].web_app.url == WEBAPP_URL + "?a=1"
@@ -291,12 +319,214 @@ async def test_start_photo_error_still_sends_greeting(configured, fake_user_fact
     info_button = message.answers[0][1]["reply_markup"].inline_keyboard[0][0]
     assert info_button.text == t("more_info_button")
     assert info_button.url == "https://birjoyda.vercel.app/quantum-psychology"
-    assert message.answers[1][0] == "👇"
+    assert message.answers[1][0] == t("start_greeting")
     assert isinstance(message.answers[1][1]["reply_markup"], ReplyKeyboardMarkup)
     button = message.answers[1][1]["reply_markup"].keyboard[0][0]
     assert button.text == t("open_button")
     assert button.web_app.url == WEBAPP_URL + "?src=ig"
     assert "Could not send welcome photo: RuntimeError" in caplog.text
+    handlers.showcase.send_video.assert_awaited_once_with(
+        message.bot, message.chat.id, texts.TEXTS["cyr"]
+    )
+
+
+@pytest.mark.asyncio
+async def test_start_video_error_keeps_photo_and_greeting(configured, fake_user_factory, caplog):
+    handlers, _ = configured
+    handlers.showcase.send_video.side_effect = RuntimeError("private video data")
+    message = FakeMessage(fake_user_factory(), text="/start")
+
+    await handlers.start(message)
+
+    assert message.calls == ["photo", "answer"]
+    assert message.answers[0][0] == t("start_greeting")
+    assert "Could not send start video: RuntimeError" in caplog.text
+    assert "private video data" not in caplog.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("script", ["cyr", "lat"])
+@pytest.mark.parametrize("key,method,page", [
+    ("results_button", "send_results", 1),
+    ("coaching_button", "send_video", None),
+    ("about_button", "send_about", None),
+    ("contact_button", "send_contact", None),
+])
+async def test_showcase_text_buttons(configured, fake_user_factory, script, key, method, page):
+    handlers, _ = configured
+    message = FakeMessage(fake_user_factory(), text=texts.TEXTS[script][key])
+
+    await build_dispatcher(handlers).message.trigger(message, bot=message.bot)
+
+    args = (message.bot, message.chat.id)
+    if page is not None:
+        args += (page,)
+    getattr(handlers.showcase, method).assert_awaited_once_with(*args, texts.TEXTS["cyr"])
+    assert message.answers == []
+
+
+def own_contact(user, phone="998901234567"):
+    return Contact(phone_number=phone, first_name="Test", user_id=user.id)
+
+
+@pytest.mark.asyncio
+async def test_own_contact_saved_delivered_and_thanked(configured, fake_user_factory):
+    handlers, storage = configured
+    user = fake_user_factory(full_name="<Private User>")
+    message = FakeMessage(user, contact=own_contact(user))
+    bot = FakeBot()
+
+    await handlers.contact(message, bot)
+
+    (row,) = await storage._fetch_user_rows("SELECT * FROM callback_requests LIMIT 2")
+    assert row["phone"] == "+998901234567"
+    assert row["delivered"] == 1
+    assert len(bot.sent) == 1
+    chat_id, admin_text, kwargs = bot.sent[0]
+    assert chat_id == ADMIN_CHAT_ID
+    assert kwargs["parse_mode"] == ParseMode.HTML
+    assert str(row["id"]) in admin_text
+    assert "&lt;Private User&gt;" in admin_text
+    assert "<Private User>" not in admin_text
+    assert row["phone"] in admin_text
+    assert message.answers[0][0] == t("callback_thanks")
+    assert isinstance(message.answers[0][1]["reply_markup"], ReplyKeyboardMarkup)
+    assert await storage.count_users() == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("contact_kind", ["foreign", "missing_id", "invalid_phone"])
+async def test_contact_rejects_foreign_or_invalid(configured, fake_user_factory, contact_kind):
+    handlers, storage = configured
+    user = fake_user_factory()
+    contact = own_contact(user)
+    if contact_kind == "foreign":
+        contact = contact.model_copy(update={"user_id": user.id + 1})
+    elif contact_kind == "missing_id":
+        contact = contact.model_copy(update={"user_id": None})
+    else:
+        contact = contact.model_copy(update={"phone_number": "invalid"})
+    message = FakeMessage(user, contact=contact)
+    bot = FakeBot()
+
+    await handlers.contact(message, bot)
+
+    assert message.answers == [(t("callback_not_own"), {})]
+    assert await storage.undelivered_callbacks() == []
+    assert bot.sent == []
+
+
+@pytest.mark.asyncio
+async def test_contact_cooldown_is_separate_from_lead(configured, fake_user_factory):
+    handlers, storage = configured
+    user = fake_user_factory()
+    await handlers.web_app_data(FakeMessage(user, data=payload()), FakeBot())
+    first = FakeMessage(user, contact=own_contact(user))
+    second = FakeMessage(user, contact=own_contact(user))
+    bot = FakeBot()
+
+    await handlers.contact(first, bot)
+    await handlers.contact(second, bot)
+
+    assert first.answers[0][0] == t("callback_thanks")
+    assert second.answers == [(t("callback_cooldown"), {})]
+    assert len(bot.sent) == 1
+    assert len(await storage._fetch_user_rows("SELECT * FROM callback_requests LIMIT 2")) == 1
+
+
+@pytest.mark.asyncio
+async def test_contact_save_error_does_not_start_cooldown(configured, fake_user_factory, monkeypatch, caplog):
+    handlers, storage = configured
+    user = fake_user_factory()
+    original_save = storage.save_callback
+    monkeypatch.setattr(storage, "save_callback", AsyncMock(side_effect=RuntimeError("private phone data")))
+    failed = FakeMessage(user, contact=own_contact(user))
+    bot = FakeBot()
+
+    await handlers.contact(failed, bot)
+
+    assert failed.answers == [(t("server_error"), {})]
+    assert bot.sent == []
+    assert "Could not save callback request: RuntimeError" in caplog.text
+    assert "private phone data" not in caplog.text
+    monkeypatch.setattr(storage, "save_callback", original_save)
+    accepted = FakeMessage(user, contact=own_contact(user))
+    await handlers.contact(accepted, bot)
+    assert accepted.answers[0][0] == t("callback_thanks")
+
+
+@pytest.mark.asyncio
+async def test_contact_delivery_error_keeps_pending_without_logging_personal_data(
+    configured, fake_user_factory, caplog
+):
+    handlers, storage = configured
+    user = fake_user_factory(full_name="Private Person")
+    message = FakeMessage(user, contact=own_contact(user))
+
+    await handlers.contact(message, FakeBot(fail=True))
+
+    assert message.answers[0][0] == t("callback_thanks")
+    assert len(await storage.undelivered_callbacks()) == 1
+    assert "Could not deliver callback request" in caplog.text
+    assert "+998901234567" not in caplog.text
+    assert "Private Person" not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_callback_retry_continues_after_lead_read_error(configured, fake_user_factory, monkeypatch, caplog):
+    handlers, storage = configured
+    user = fake_user_factory()
+    await handlers.contact(FakeMessage(user, contact=own_contact(user)), FakeBot(fail=True))
+    monkeypatch.setattr(storage, "undelivered", AsyncMock(side_effect=RuntimeError("lead read failed")))
+    bot = FakeBot()
+
+    await handlers.retry_undelivered_once(bot)
+
+    assert len(bot.sent) == 1
+    assert await storage.undelivered_callbacks() == []
+    assert "Could not read undelivered applications: RuntimeError" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_lead_retry_continues_after_callback_read_error(configured, fake_user_factory, monkeypatch, caplog):
+    handlers, storage = configured
+    await handlers.web_app_data(FakeMessage(fake_user_factory(), data=payload()), FakeBot(fail=True))
+    monkeypatch.setattr(storage, "undelivered_callbacks", AsyncMock(side_effect=RuntimeError("callback read failed")))
+    bot = FakeBot()
+
+    await handlers.retry_undelivered_once(bot)
+
+    assert len(bot.sent) == 1
+    assert (await storage.all_rows())[0]["delivered"] == 1
+    assert "Could not read undelivered callback requests: RuntimeError" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_callback_retry_skips_in_flight_delivery(configured, fake_user_factory):
+    handlers, storage = configured
+    sending = asyncio.Event()
+    release = asyncio.Event()
+
+    class BlockingBot(FakeBot):
+        async def send_message(self, chat_id, text, **kwargs):
+            sending.set()
+            await release.wait()
+            await super().send_message(chat_id, text, **kwargs)
+
+    bot = BlockingBot()
+    user = fake_user_factory()
+    delivery = asyncio.create_task(handlers.contact(FakeMessage(user, contact=own_contact(user)), bot))
+    try:
+        await asyncio.wait_for(sending.wait(), timeout=EVENT_TIMEOUT_SECONDS)
+        assert len(await storage.undelivered_callbacks()) == 1
+        await asyncio.wait_for(handlers.retry_undelivered_once(bot), timeout=EVENT_TIMEOUT_SECONDS)
+        assert bot.sent == []
+    finally:
+        release.set()
+        await delivery
+
+    assert len(bot.sent) == 1
+    assert await storage.undelivered_callbacks() == []
 
 
 def test_welcome_photo_exists():
@@ -686,11 +916,16 @@ async def test_admin_read_and_transport_errors(configured, monkeypatch, caplog, 
 
 
 @pytest.mark.asyncio
-async def test_dispatcher_registers_admin_before_fallback_and_filters_callbacks(configured, monkeypatch):
+async def test_dispatcher_registers_admin_before_fallback_and_filters_callbacks(
+    configured, fake_user_factory, monkeypatch
+):
     handlers, _ = configured
     dispatcher = build_dispatcher(handlers)
     registered = [handler.callback for handler in dispatcher.message.handlers]
     assert registered.index(handlers.admin_menu) < registered.index(handlers.fallback)
+    for handler in (handlers.results, handlers.coaching, handlers.about, handlers.contact_info, handlers.contact):
+        assert registered.index(handler) < registered.index(handlers.fallback)
+    assert registered[-1] == handlers.fallback
     assert dispatcher.resolve_used_update_types() == ["callback_query", "message"]
     answer = AsyncMock()
     monkeypatch.setattr(Message, "answer", answer)
@@ -698,14 +933,25 @@ async def test_dispatcher_registers_admin_before_fallback_and_filters_callbacks(
     await dispatcher.message.trigger(message, bot=FakeBot())
     answer.assert_awaited_once()
     assert answer.await_args.kwargs["reply_markup"] == admin_panel.panel_keyboard()
+    answer.reset_mock()
+    user = fake_user_factory()
+    contact_message = FakeMessage(user, contact=own_contact(user))
+    contact_bot = FakeBot()
+    await dispatcher.message.trigger(contact_message, bot=contact_bot)
+    answer.assert_not_awaited()
+    assert contact_message.answers[0][0] == t("callback_thanks")
+    assert len(contact_bot.sent) == 1
 
     admin_callback = FakeCallback("adm:unknown", None)
+    show_callback = FakeCallback("show:video", FakeMessage(None))
     other_callback = FakeCallback("other:unknown", None)
 
     await dispatcher.callback_query.trigger(admin_callback)
+    await dispatcher.callback_query.trigger(show_callback)
     await dispatcher.callback_query.trigger(other_callback)
 
     admin_callback.answer.assert_awaited_once_with()
+    handlers.showcase.handle_callback.assert_awaited_once_with(show_callback, texts.TEXTS["cyr"])
     other_callback.answer.assert_not_awaited()
 
 

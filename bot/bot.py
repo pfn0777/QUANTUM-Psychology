@@ -39,9 +39,12 @@ from aiohttp import web
 from dotenv import dotenv_values
 
 import admin_panel
+import callbacks
 import catalog
+import content
 import leads
 import panel_server
+import showcase
 import stats
 import texts
 from storage import Storage
@@ -209,7 +212,12 @@ def webapp_url(settings: Settings, source: str | None = None) -> str:
 
 def keyboard(settings: Settings, source: str | None = None) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=texts.t("open_button"), web_app=WebAppInfo(url=webapp_url(settings, source)))]],
+        keyboard=[
+            [KeyboardButton(text=texts.t("open_button"), web_app=WebAppInfo(url=webapp_url(settings, source)))],
+            [KeyboardButton(text=texts.t("results_button")), KeyboardButton(text=texts.t("coaching_button"))],
+            [KeyboardButton(text=texts.t("about_button")), KeyboardButton(text=texts.t("contact_button"))],
+            [KeyboardButton(text=texts.t("callback_button"), request_contact=True)],
+        ],
         resize_keyboard=True,
         is_persistent=True,
     )
@@ -224,12 +232,15 @@ def more_info_keyboard() -> InlineKeyboardMarkup:
 class BotHandlers:
     """Handler logic with injected storage and a testable bot transport."""
 
-    def __init__(self, settings: Settings, storage: Storage) -> None:
+    def __init__(self, settings: Settings, storage: Storage, showcase_instance: showcase.Showcase | None = None) -> None:
         self.settings = settings
         self.storage = storage
+        self.showcase = showcase_instance if showcase_instance is not None else showcase.Showcase()
         self._accepted_at: dict[int, float] = {}
+        self._callback_accepted_at: dict[int, float] = {}
         self._user_locks: dict[int, asyncio.Lock] = {}
         self._delivering_ids: set[int] = set()
+        self._delivering_callback_ids: set[int] = set()
 
     async def start(self, message: Message) -> None:
         parts = (message.text or "").split(maxsplit=1)
@@ -247,6 +258,57 @@ class BotHandlers:
             logger.error("Could not send welcome photo: %s", type(exc).__name__)
             await message.answer(texts.t("welcome_caption"), reply_markup=more_info_keyboard())
         await message.answer(texts.t("start_greeting"), reply_markup=keyboard(self.settings, source))
+        try:
+            await self.showcase.send_video(message.bot, message.chat.id, texts.TEXTS["cyr"])
+        except Exception as exc:
+            logger.error("Could not send start video: %s", type(exc).__name__)
+
+    async def results(self, message: Message) -> None:
+        await self.showcase.send_results(message.bot, message.chat.id, 1, texts.TEXTS["cyr"])
+
+    async def coaching(self, message: Message) -> None:
+        await self.showcase.send_video(message.bot, message.chat.id, texts.TEXTS["cyr"])
+
+    async def about(self, message: Message) -> None:
+        await self.showcase.send_about(message.bot, message.chat.id, texts.TEXTS["cyr"])
+
+    async def contact_info(self, message: Message) -> None:
+        await self.showcase.send_contact(message.bot, message.chat.id, texts.TEXTS["cyr"])
+
+    async def showcase_callback(self, callback: CallbackQuery) -> None:
+        await self.showcase.handle_callback(callback, texts.TEXTS["cyr"])
+
+    async def contact(self, message: Message, bot: Bot) -> None:
+        user = message.from_user
+        phone = callbacks.own_contact_phone(message.contact, user.id if user is not None else None)
+        if phone is None:
+            await message.answer(texts.t("callback_not_own"))
+            return
+
+        assert user is not None
+        async with self._user_locks.setdefault(user.id, asyncio.Lock()):
+            now = time.monotonic()
+            last = self._callback_accepted_at.get(user.id)
+            if last is not None and now - last < catalog.COOLDOWN_SECONDS:
+                await message.answer(texts.t("callback_cooldown"))
+                return
+
+            row = callbacks.callback_row(user, phone, datetime.now(timezone.utc))
+            try:
+                callback_id = await self.storage.save_callback(row)
+            except Exception as exc:
+                logger.error("Could not save callback request: %s", type(exc).__name__)
+                await message.answer(texts.t("server_error"))
+                return
+            self._callback_accepted_at[user.id] = time.monotonic()
+            row["id"] = callback_id
+            self._delivering_callback_ids.add(callback_id)
+            try:
+                await self._record_user(user, None)
+            finally:
+                self._delivering_callback_ids.discard(callback_id)
+            await self._deliver_callback(row, bot)
+            await message.answer(texts.t("callback_thanks"), reply_markup=keyboard(self.settings))
 
     async def web_app_data(self, message: Message, bot: Bot) -> None:
         user = message.from_user
@@ -314,12 +376,30 @@ class BotHandlers:
         finally:
             self._delivering_ids.discard(lead_id)
 
+    async def _deliver_callback(self, row: dict, bot: Bot) -> None:
+        callback_id = row["id"]
+        if callback_id in self._delivering_callback_ids:
+            return
+        self._delivering_callback_ids.add(callback_id)
+        try:
+            try:
+                await bot.send_message(
+                    self.settings.admin_chat_id,
+                    callbacks.render_callback_admin(row, _created_at(row)),
+                    parse_mode=ParseMode.HTML,
+                )
+                await self.storage.mark_callback_delivered(callback_id)
+            except Exception as exc:
+                logger.error("Could not deliver callback request id=%s: %s", callback_id, type(exc).__name__)
+        finally:
+            self._delivering_callback_ids.discard(callback_id)
+
     async def retry_undelivered_once(self, bot: Bot) -> None:
         try:
             rows = await self.storage.undelivered()
         except Exception as exc:
             logger.error("Could not read undelivered applications: %s", type(exc).__name__)
-            return
+            rows = []
         for row in rows:
             if row["id"] in self._delivering_ids:
                 continue
@@ -327,10 +407,27 @@ class BotHandlers:
                 pending_ids = {pending["id"] for pending in await self.storage.undelivered()}
             except Exception as exc:
                 logger.error("Could not recheck undelivered applications: %s", type(exc).__name__)
-                return
+                break
             if row["id"] not in pending_ids:
                 continue
             await self._deliver(row, bot)
+
+        try:
+            callback_rows = await self.storage.undelivered_callbacks()
+        except Exception as exc:
+            logger.error("Could not read undelivered callback requests: %s", type(exc).__name__)
+            return
+        for row in callback_rows:
+            if row["id"] in self._delivering_callback_ids:
+                continue
+            try:
+                pending_ids = {pending["id"] for pending in await self.storage.undelivered_callbacks()}
+            except Exception as exc:
+                logger.error("Could not recheck undelivered callback requests: %s", type(exc).__name__)
+                break
+            if row["id"] not in pending_ids:
+                continue
+            await self._deliver_callback(row, bot)
 
     async def retry_forever(self, bot: Bot) -> None:
         while True:
@@ -457,7 +554,18 @@ def build_dispatcher(handlers: BotHandlers) -> Dispatcher:
     dispatcher.message.register(handlers.statistics, Command("stats"))
     dispatcher.message.register(handlers.admin_menu, Command("admin"))
     dispatcher.message.register(handlers.web_app_data, F.web_app_data)
+    for key, handler in (
+        ("results_button", handlers.results),
+        ("coaching_button", handlers.coaching),
+        ("about_button", handlers.about),
+        ("contact_button", handlers.contact_info),
+    ):
+        dispatcher.message.register(
+            handler, F.text.in_({texts.TEXTS["cyr"][key], texts.TEXTS["lat"][key]})
+        )
+    dispatcher.message.register(handlers.contact, F.contact)
     dispatcher.message.register(handlers.fallback, F.text)
+    dispatcher.callback_query.register(handlers.showcase_callback, F.data.startswith(content.SHOW_PREFIX))
     dispatcher.callback_query.register(handlers.admin_callback, F.data.startswith(admin_panel.CALLBACK_PREFIX))
     return dispatcher
 
