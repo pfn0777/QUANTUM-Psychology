@@ -131,6 +131,20 @@ class Storage:
             await db.execute(
                 "CREATE INDEX IF NOT EXISTS idx_leads_delivered ON leads (delivered)"
             )
+            await db.execute(
+                """CREATE TABLE IF NOT EXISTS callback_requests (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    created_at TEXT NOT NULL,
+                    tg_user_id INTEGER NOT NULL,
+                    tg_username TEXT,
+                    tg_full_name TEXT NOT NULL,
+                    phone TEXT NOT NULL,
+                    delivered INTEGER NOT NULL DEFAULT 0
+                )"""
+            )
+            await db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_callback_requests_created_at ON callback_requests (created_at)"
+            )
             await db.execute("BEGIN")
             await db.execute(
                 """CREATE TABLE IF NOT EXISTS users (
@@ -275,6 +289,50 @@ class Storage:
                 await db.rollback()
                 raise
 
+    async def save_callback(self, row: dict) -> int:
+        """Insert one callback request with a UTC timestamp."""
+        db = self._connection()
+        created_at = row.get("created_at")
+        if created_at is None:
+            created_at = datetime.now(timezone.utc)
+        created_at = self._utc_iso(created_at)
+        async with self._write_lock:
+            try:
+                async with db.execute(
+                    """INSERT INTO callback_requests (
+                        created_at, tg_user_id, tg_username, tg_full_name, phone
+                    ) VALUES (?, ?, ?, ?, ?)""",
+                    (
+                        created_at,
+                        row["tg_user_id"],
+                        row.get("tg_username"),
+                        row["tg_full_name"],
+                        row["phone"],
+                    ),
+                ) as cursor:
+                    callback_id = cursor.lastrowid
+                if callback_id is None:
+                    raise RuntimeError("SQLite did not return a callback request id")
+                await db.commit()
+                return callback_id
+            except BaseException:
+                await db.rollback()
+                raise
+
+    async def mark_callback_delivered(self, callback_id: int) -> None:
+        db = self._connection()
+        async with self._write_lock:
+            try:
+                async with db.execute(
+                    "UPDATE callback_requests SET delivered = ? WHERE id = ?",
+                    (DELIVERED, callback_id),
+                ):
+                    pass
+                await db.commit()
+            except BaseException:
+                await db.rollback()
+                raise
+
     async def upsert_user(
         self,
         tg_user_id: int,
@@ -368,6 +426,15 @@ class Storage:
     async def undelivered(self, limit: int = DEFAULT_UNDELIVERED_LIMIT) -> list[dict]:
         return await self._fetch_rows(
             "SELECT * FROM leads WHERE delivered = ? ORDER BY created_at, id LIMIT ?",
+            (UNDELIVERED, limit),
+        )
+
+    async def undelivered_callbacks(
+        self, limit: int = DEFAULT_UNDELIVERED_LIMIT
+    ) -> list[dict]:
+        return await self._fetch_user_rows(
+            """SELECT * FROM callback_requests
+               WHERE delivered = ? ORDER BY created_at, id LIMIT ?""",
             (UNDELIVERED, limit),
         )
 
