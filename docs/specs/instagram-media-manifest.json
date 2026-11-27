@@ -1,4 +1,5 @@
 {
+  "post_edits": "bot/assets/reviews JPEGs are edited after generation: flower emoji (U+1F338) covers faces on reviews 15, 16, 17, 18 (natijalar/15, otziv/02, otziv/05, otziv/06). bot/assets/about/02.jpg was replaced manually (commit 5adf46d). Re-running prepare_bot_media.py without --check overwrites these edits.",
   "source": "instagram.com/quantum_psychology_ highlights, captured 2026-11-27 as screen captures of paused stories (stories are video cards, 360x640; CDN URLs are not downloadable)",
   "capture_size": [327, 583],
   "crop_note": "crop = [left, top, right, bottom] in capture pixels; removes Instagram UI, music stickers and link stickers",
@@ -39,14 +40,14 @@
       "highlight_id": "18617364763047648",
       "target": "bot/assets/reviews",
       "files": [
-        {"file": "Otzivlar/instagram/otziv/01.png", "crop": [0, 145, 327, 525], "note": "Мижоз фикри, 8 ойлик коучинг"},
         {"file": "Otzivlar/instagram/otziv/02.png", "crop": [0, 95, 327, 520], "note": "Коучинггача / ҳозир"},
-        {"file": "Otzivlar/instagram/otziv/03.png", "crop": [0, 90, 327, 520], "note": "8 ой ичида натижалар"},
-        {"file": "Otzivlar/instagram/otziv/04.png", "crop": [0, 75, 327, 500], "note": "Энг яхши ишим"},
         {"file": "Otzivlar/instagram/otziv/05.png", "crop": [0, 100, 327, 535], "note": "У нимани англади"},
         {"file": "Otzivlar/instagram/otziv/06.png", "crop": [0, 100, 327, 535], "note": "8 ойлик коучингдан сўнг"}
       ],
       "skipped": [
+        {"file": "Otzivlar/instagram/otziv/01.png", "reason": "duplicate client (Ahmedova Odinaxon); kept only the before/after card (otziv/02)"},
+        {"file": "Otzivlar/instagram/otziv/03.png", "reason": "duplicate client (Ahmedova Odinaxon); kept only the before/after card (otziv/02)"},
+        {"file": "Otzivlar/instagram/otziv/04.png", "reason": "duplicate client (Ahmedova Odinaxon); kept only the before/after card (otziv/02)"},
         {"story": "8 ой — бу ҳақиқий йўл; Ушбу коучинг сиз учун", "reason": "sales cards, not reviews"},
         {"story": "Сизда кучлироқ қувват бор", "reason": "promo"},
         {"story": "3,5 ойда ўзгарди (1/3, 2/3)", "reason": "health claims (allergy, migraine cured); mentor decision, user may re-add"},

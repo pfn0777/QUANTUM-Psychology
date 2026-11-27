@@ -25,7 +25,7 @@ INITIAL_CRF = 28
 MAX_CRF = 40
 CRF_STEP = 3
 AUDIO_BITRATE = "96k"
-EXPECTED_COUNTS = {"reviews": 27, "about": 2}
+EXPECTED_COUNTS = {"reviews": 24, "about": 2}
 IMAGE_TARGETS = {
     (ROOT / "bot/assets/reviews").resolve(): "reviews",
     (ROOT / "bot/assets/about").resolve(): "about",
