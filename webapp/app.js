@@ -11,6 +11,7 @@ const DEFAULT_SCRIPT = "cyr";
 const LATIN_SCRIPT = "lat";
 const MODULE_NUMBER_WIDTH = 2;
 const SUBMIT_FALLBACK_MS = 900;
+const BRAND_BACKGROUND = "#FBF6EC";
 const tg = window.Telegram?.WebApp;
 const inTelegram = canSendToBot(tg);
 const querySource = new URLSearchParams(window.location.search).get("src");
@@ -299,6 +300,10 @@ if (tg) {
   try {
     tg.ready();
     tg.expand();
+    if (tg.isVersionAtLeast?.("6.1")) {
+      tg.setHeaderColor(BRAND_BACKGROUND);
+      tg.setBackgroundColor(BRAND_BACKGROUND);
+    }
   } catch (error) {
     console.warn("Unable to initialize Telegram WebApp", error);
   }
