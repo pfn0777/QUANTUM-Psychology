@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const read = (path) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), "utf8");
+const WELCOME_SIZE = 1254;
+const path = (relative) => fileURLToPath(new URL(relative, import.meta.url));
+const read = (relative) => readFileSync(path(relative), "utf8");
 const files = {
   welcome: read("../welcome.html"),
   poster: read("../poster.html"),
@@ -26,18 +28,29 @@ const allowed = new Set((
   "#FBE9B4 #E0B65E #A9792B #D9AE55 #7A5518 #B98A3A"
 ).toUpperCase().split(" "));
 
-test("exact copy and page-specific CTA", () => {
-  for (const [name, html] of [["welcome", files.welcome], ["poster", files.poster]]) {
-    for (const phrase of shared) assert.ok(html.includes(phrase), `${name}: missing ${phrase}`);
-    assert.match(html, /<html lang="uz-Cyrl">/);
-    assert.match(html, /href="\.\.\/\.\.\/webapp\/fonts\.css"/);
-    assert.match(html, /href="posters\.css"/);
-  }
-  const welcomeCta = files.welcome.match(/<div class="cta">([\s\S]*?)<\/div>/)?.[1];
-  assert.ok(welcomeCta, "welcome: missing CTA");
-  assert.equal(welcomeCta.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(), cta);
+test("welcome gold template", () => {
+  assert.match(files.welcome, /<html lang="uz-Cyrl">/);
+  assert.match(files.welcome, /href="\.\.\/\.\.\/webapp\/fonts\.css"/);
+  assert.match(files.welcome, /href="posters\.css"/);
+  assert.match(files.welcome, /src="assets\/welcome-gold\.png"/);
+  assert.ok(files.welcome.includes(shared.at(-1)));
+  assert.doesNotMatch(files.welcome, /имкониятигеизни/);
+});
+
+test("welcome gold source is 1254px PNG", () => {
+  const png = readFileSync(path("../assets/welcome-gold.png"));
+  assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  assert.equal(png.toString("ascii", 12, 16), "IHDR");
+  assert.equal(png.readUInt32BE(16), WELCOME_SIZE);
+  assert.equal(png.readUInt32BE(20), WELCOME_SIZE);
+});
+
+test("poster copy and page-specific CTA", () => {
+  for (const phrase of shared) assert.ok(files.poster.includes(phrase), `poster: missing ${phrase}`);
+  assert.match(files.poster, /<html lang="uz-Cyrl">/);
+  assert.match(files.poster, /href="\.\.\/\.\.\/webapp\/fonts\.css"/);
+  assert.match(files.poster, /href="posters\.css"/);
   assert.ok(!files.poster.includes(cta));
-  assert.match(files.welcome, /class="chevron"/);
   assert.doesNotMatch(files.poster, /class="chevron"|class="cta"/);
 });
 

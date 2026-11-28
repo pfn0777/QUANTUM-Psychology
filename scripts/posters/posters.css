@@ -37,3 +37,6 @@ body { color-scheme: light; background: #FBF6EC; font-family: "Montserrat", sans
 .canvas--poster .benefits { margin-top: 40px; }
 .canvas--poster .benefits li { font-size: 27px; }
 .canvas--poster .slogan { margin-top: 52px; }
+.canvas--gold::before { content: none; }
+.canvas--gold .slogan-patch { position: absolute; left: 11.5%; top: 54%; width: 77%; height: 4.4%; background-image: url("assets/welcome-gold.png"); background-size: 1254px 5016px; background-position: center -2640px; -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent), linear-gradient(to right, transparent, black 3%, black 97%, transparent); mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent), linear-gradient(to right, transparent, black 3%, black 97%, transparent); -webkit-mask-composite: source-in; mask-composite: intersect; }
+.canvas--gold .slogan { position: absolute; top: 54.5%; left: 0; width: 100%; max-width: none; margin: 0; color: #3B2112; font: italic 600 44px/1.04 "Cormorant Garamond", serif; text-align: center; }
