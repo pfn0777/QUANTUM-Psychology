@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+body { color-scheme: light; background: #FBF6EC; font-family: "Montserrat", sans-serif; }
+.canvas { position: relative; width: 100%; height: 100%; overflow: hidden; background: #FBF6EC; }
+.canvas__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center center; }
+.canvas::before { position: absolute; z-index: 1; inset: 0; content: ""; background: radial-gradient(ellipse 73% 58% at 50% 36%, rgba(251,246,236,.94) 0%, rgba(251,246,236,.72) 62%, rgba(251,246,236,0) 100%); }
+.content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; padding: 12px 64px 0; text-align: center; }
+.mark { width: 112px; height: 112px; flex: none; filter: drop-shadow(0 0 11px rgba(201,160,80,.42)); }
+.eyebrow-row { display: flex; align-items: center; justify-content: center; gap: 17px; width: 100%; margin-top: 5px; }
+.eyebrow-row::before, .eyebrow-row::after { content: ""; width: 136px; height: 1px; background: linear-gradient(90deg, transparent, #C9A050); }
+.eyebrow-row::after { transform: rotate(180deg); }
+.eyebrow { margin: 0; padding: 9px 28px; border: 1.5px solid #D9B66E; border-radius: 999px; background: linear-gradient(180deg,#FFFDF7,#F4EAD7); box-shadow: 0 6px 16px rgba(140,100,32,.15); color: #8C6420; font-size: 21px; font-weight: 700; line-height: 1.2; letter-spacing: .12em; white-space: nowrap; }
+.title { margin: 6px 0 0; line-height: 1; }
+.title__main { display: block; color: #8C6420; font: 700 158px/.78 "Cormorant Garamond", serif; letter-spacing: .025em; background: linear-gradient(180deg,#D9AE55 0%,#A9792B 55%,#7A5518 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 4px 10px rgba(140,100,32,.25)); }
+.title__sub { display: block; margin-top: 3px; color: #8C6420; font: italic 600 94px/.82 "Cormorant Garamond", serif; }
+.divider { display: flex; align-items: center; justify-content: center; gap: 11px; width: 340px; height: 32px; margin-top: 7px; }
+.divider__line { flex: 1; height: 1px; background: linear-gradient(90deg,transparent,#C9A050); }
+.divider__line:last-child { transform: rotate(180deg); }
+.divider__diamond { width: 7px; height: 7px; flex: none; transform: rotate(45deg); background: #C9A050; }
+.divider__atom { width: 25px; height: 25px; flex: none; }
+.subtitle { max-width: 1050px; margin: 6px 0 0; color: #3B2112; font-size: 35px; font-weight: 600; line-height: 1.16; }
+.benefits { display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; width: 100%; max-width: 1090px; margin: 23px 0 0; padding: 0; list-style: none; }
+.benefits li { display: flex; flex-direction: column; align-items: center; padding: 0 14px; color: #2B1A0E; font-size: 24px; font-weight: 600; line-height: 1.16; }
+.benefits li + li { border-left: 1px solid #E9D6B0; }
+.benefit-icon { display: grid; place-items: center; width: 72px; height: 72px; flex: none; margin-bottom: 10px; border: 1.5px solid #C9A050; border-radius: 50%; background: #FBF6EC; }
+.benefit-icon svg { width: 42px; height: 42px; fill: none; stroke: #8C6420; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.slogan { max-width: 1090px; margin: 11px 0 0; color: #3B2112; font: italic 600 40px/1.04 "Cormorant Garamond", serif; }
+.chevron { display: block; width: 40px; height: 31px; margin-top: 7px; fill: none; stroke: #8C6420; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.cta { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 78%; min-height: 100px; margin-top: 7px; padding: 12px 38px; border: 2px solid #C9A050; border-radius: 999px; background: linear-gradient(180deg,#5A3620 0%,#3B2112 60%,#2A170B 100%); box-shadow: 0 8px 20px rgba(59,33,18,.25); color: #F1D79A; font-size: 33px; font-weight: 800; line-height: 1.12; letter-spacing: .06em; }
+.cta span { white-space: nowrap; }
+.canvas--poster .content { padding-top: 20px; }
+.canvas--poster .eyebrow-row { margin-top: 15px; }
+.canvas--poster .title { margin-top: 20px; }
+.canvas--poster .title__main { font-size: 180px; }
+.canvas--poster .divider { margin-top: 20px; }
+.canvas--poster .subtitle { margin-top: 20px; font-size: 40px; }
+.canvas--poster .benefits { margin-top: 40px; }
+.canvas--poster .benefits li { font-size: 27px; }
+.canvas--poster .slogan { margin-top: 52px; }
