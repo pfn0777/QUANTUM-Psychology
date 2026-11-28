@@ -62,7 +62,7 @@ const EXPECTED_CATALOG = [
 ];
 const REQUIRED_UI_KEYS = [
   "toggleCyr", "toggleLat", "heroEyebrow", "heroTitle", "heroSubtitle",
-  "heroTagline", "heroTag", "heroTagText", "heroCta", "heroImageAlt", "heroImageSrc", "aboutTitle",
+  "heroTagline", "heroTag", "heroTagText", "heroCta", "heroBenefit1", "heroBenefit2", "heroBenefit3", "aboutTitle",
   "modulesTitle", "goalTitle", "audienceTitle", "founderTitle",
   "founderP1", "founderP2", "founderP3", "consultationTitle",
   "consultationStep1", "consultationStep2", "consultationStep3", "formTitle",
@@ -85,8 +85,9 @@ const SPEC_UI_CYR = {
   toggleLat: "Lot",
   heroEyebrow: "12 ОЙЛИК ДАСТУР",
   heroTitle: "QUANTUM Psychology",
-  heroImageAlt: "QUANTUM Psychology — 12 ойлик шахсий ва руҳий ривожланиш дастури. Фикр кучини бошқариш, ички мувозанат ва хотиржамлик, ҳаёт сифатини юксалтириш. Бепул дастлабки суҳбат.",
-  heroImageSrc: "assets/hero-banner-cyr.webp",
+  heroBenefit1: "Фикр кучини бошқариш",
+  heroBenefit2: "Ички мувозанат ва хотиржамлик",
+  heroBenefit3: "Ҳаёт сифатини юксалтириш",
   heroSubtitle: "12 ойлик шахсий ва руҳий ривожланиш дастури",
   heroTagline: "Ички имкониятингизни очинг — янги даражага чиқинг",
   heroTag: "БЕПУЛ",
@@ -110,8 +111,9 @@ const SPEC_UI_CYR = {
   disclaimer: "Дастур тиббий ёрдам ўрнини босмайди. Соғлиғингиз бўйича шифокорга мурожаат қилинг.",
 };
 const LATIN_SPOT_CHECKS = {
-  heroImageAlt: "QUANTUM Psychology — 12 oylik shaxsiy va ruhiy rivojlanish dasturi. Fikr kuchini boshqarish, ichki muvozanat va xotirjamlik, hayot sifatini yuksaltirish. Bepul dastlabki suhbat.",
-  heroImageSrc: "assets/hero-banner.webp",
+  heroBenefit1: "Fikr kuchini boshqarish",
+  heroBenefit2: "Ichki muvozanat va xotirjamlik",
+  heroBenefit3: "Hayot sifatini yuksaltirish",
   heroEyebrow: "12 OYLIK DASTUR",
   heroSubtitle: "12 oylik shaxsiy va ruhiy rivojlanish dasturi",
   heroTagline: "Ichki imkoniyatingizni oching — yangi darajaga chiqing",
@@ -205,15 +207,23 @@ test("fixed UI copy matches section 9 verbatim in Cyrillic and Latin spot checks
   }
 });
 
-test("hero banner sources exist and initial HTML uses the Cyrillic source", () => {
-  for (const script of ["cyr", "lat"]) {
-    assert.ok(existsSync(new URL(`../${UI[script].heroImageSrc}`, import.meta.url)), `${script} hero banner is missing`);
-  }
+test("hero background and branded HTML are present", () => {
+  assert.ok(existsSync(new URL("../assets/hero-bg.webp", import.meta.url)));
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-  const heroImage = html.match(/<div class="hero__image"[^>]*><img\b([^>]*)>/u)?.[1];
-  assert.ok(heroImage, "hero image is missing");
-  assert.equal(heroImage.match(/\bsrc="([^"]+)"/u)?.[1], UI.cyr.heroImageSrc);
-  assert.match(heroImage, /\bdata-i18n-src="heroImageSrc"/u);
+  const hero = html.match(/<section class="hero"[\s\S]*?<\/section>/u)?.[0];
+  assert.ok(hero, "hero section is missing");
+  assert.match(hero, /<img class="hero__bg"[^>]*src="assets\/hero-bg\.webp"[^>]*alt=""/u);
+  assert.match(hero, /<h1 id="heroTitle"[^>]*>[\s\S]*?QUANTUM[\s\S]*?Psychology[\s\S]*?<\/h1>/u);
+  assert.match(hero, /<a class="button button--primary hero__cta" href="#leadForm">[\s\S]*?data-i18n="heroCta"[\s\S]*?<\/a>/u);
+  for (const key of ["heroBenefit1", "heroBenefit2", "heroBenefit3"]) assert.match(hero, new RegExp(`data-i18n="${key}"`, "u"));
+  assert.equal(existsSync(new URL("../assets/hero-banner.webp", import.meta.url)), false);
+  assert.equal(existsSync(new URL("../assets/hero-banner-cyr.webp", import.meta.url)), false);
+  assert.doesNotMatch(html, /heroImageSrc/u);
+  for (const script of ["cyr", "lat"]) {
+    for (const key of ["heroImageSrc", "heroImageAlt"]) {
+      assert.equal(Object.hasOwn(UI[script], key), false, `${script}.${key}`);
+    }
+  }
 });
 
 test("UI has equal scripts, required errors, fallback and no emoji", () => {
