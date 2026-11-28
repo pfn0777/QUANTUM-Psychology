@@ -1,5 +1,5 @@
 # Mini App: yangi brend kitobi bo'yicha redizayn + oltin HTML hero
-Holat: JARAYONDA
+Holat: TUGADI
 Ijrochi: codex
 Turi: ISH · Hajm: KATTA
 Spec: docs/specs/miniapp-brand-redesign.md
@@ -14,7 +14,7 @@ Qabul mezonlari: spec "Acceptance"; `node --test "webapp/tests/*.test.mjs"`; 390
 ### To'lqin 1 — TUGADI
 - [x] 1. RASM: webapp/assets/hero-bg.webp (commit c912b9b, 1-urinishda; 1024x1536, 36 KB; ffmpeg'ni boshqaruvchi yuritdi; PNG o'chirildi)
 - [x] 2. Brend tokenlari va butun sahifa (commit 66d61e3, 1-urinishda; 56/56 node test; binafsha qoldiq yo'q)
-### To'lqin 2 — KOD TUGADI, VIZUAL TEKSHIRUV KUTILMOQDA
+### To'lqin 2 — TUGADI (foydalanuvchi natijani 2026-11-28 da qabul qildi; brauzer skrinshoti olinmadi — telefonda tekshiriladi)
 - [x] 3. Hero qayta qurish (commit 77dbc1c, 2-urinishda: gradient yuqori stopi 2.88:1 → #AD7F32 3.33:1; 56/56 node test; eski bannerlar o'chirildi)
 - [ ] Vizual: 390x844 cyr/lat, 360x740 — lokal server ishga tushirish auto-mode'da rad etildi, foydalanuvchi ruxsati yoki telefonda tekshiruv kerak
 
